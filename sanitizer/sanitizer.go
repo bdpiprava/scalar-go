@@ -7,10 +7,11 @@ import (
 )
 
 // Sanitize removes any non-string keys from the provided spec.
-func Sanitize(spec *model.Spec) {
+func Sanitize(spec *model.Spec) *model.Spec {
 	spec.Components.Schemas = sanitizeGenericObject(spec.Components.Schemas)
 	spec.Components.Parameters = sanitizeGenericObject(spec.Components.Parameters)
 	spec.Paths = sanitizeGenericObject(spec.Paths)
+	return spec
 }
 
 func sanitizeInterfaceArray[R any](in []R) []R {

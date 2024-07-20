@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/bdpiprava/scalar-go/model"
+	"github.com/bdpiprava/scalar-go/sanitizer"
 )
 
 // LoadWithName reads the API specification from the provided root directory
@@ -32,7 +33,7 @@ func LoadWithName(rootDir string, apiFileName string) (*model.Spec, error) {
 	}
 	maps.Copy(specContent.Components.Schemas, *schemas)
 
-	return specContent, nil
+	return sanitizer.Sanitize(specContent), nil
 }
 
 // Load reads the API specification from the provided root directory

@@ -1,6 +1,7 @@
 package loader_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/bdpiprava/scalar-go/loader"
@@ -26,6 +27,28 @@ func Test_Load_MultipleFiles(t *testing.T) {
 	assertBase(t, spec)
 	assertSchema(t, spec)
 	assertPaths(t, spec)
+}
+
+func Test_LoadedFileShouldHaveIdenticalContent(t *testing.T) {
+	specFromMultipleFiles, err := loader.LoadWithName("../data/loader-multiple-files", "api.yml")
+	assert.NoError(t, err)
+
+	specFromSingleFile, err := loader.LoadWithName("../data/loader", "pet-store.yml")
+	assert.NoError(t, err)
+
+	assert.True(t, reflect.DeepEqual(specFromMultipleFiles, specFromSingleFile))
+}
+
+func Test_Load_DocumentedPath(t *testing.T) {
+	spec, err := loader.LoadWithName("../data/loader", "pet-store.yml")
+	assert.NoError(t, err)
+
+	paths := spec.DocumentedPaths()
+
+	assert.Len(t, paths, 3)
+	assert.Equal(t, model.DocumentedPath{Path: "/pets", Method: "get"}, paths[0])
+	assert.Equal(t, model.DocumentedPath{Path: "/pets", Method: "post"}, paths[1])
+	assert.Equal(t, model.DocumentedPath{Path: "/pets/{petId}", Method: "get"}, paths[2])
 }
 
 func getPathParam(params []interface{}, name string) model.GenericObject {
