@@ -48,8 +48,9 @@ func readDirRecursively(dir string, key string) (*model.GenericObject, error) {
 	}
 
 	for _, file := range files {
+		fileName := file.Name()
 		if file.IsDir() {
-			subData, err := readDirRecursively(dir, key)
+			subData, err := readDirRecursively(filepath.Join(dir, fileName), key)
 			if err != nil {
 				return &data, err
 			}
@@ -58,7 +59,6 @@ func readDirRecursively(dir string, key string) (*model.GenericObject, error) {
 			continue
 		}
 
-		fileName := file.Name()
 		ext := filepath.Ext(fileName)
 		fileContent, err := readYamlFile[model.GenericObject](filepath.Join(dir, fileName))
 		if err != nil {
