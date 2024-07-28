@@ -1,5 +1,7 @@
 package model
 
+import "fmt"
+
 type GenericObject map[string]any
 
 type DocumentedPath struct {
@@ -18,6 +20,7 @@ type Spec struct {
 	Components Components    `yaml:"components" json:"components"`
 }
 
+// DocumentedPaths returns the list of path in the spec
 func (s Spec) DocumentedPaths() []DocumentedPath {
 	paths := make([]DocumentedPath, 0)
 	for path, methods := range s.Paths {
@@ -26,4 +29,8 @@ func (s Spec) DocumentedPaths() []DocumentedPath {
 		}
 	}
 	return paths
+}
+
+func (d DocumentedPath) String() string {
+	return fmt.Sprintf("%s_%s", d.Method, d.Path)
 }

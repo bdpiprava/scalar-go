@@ -2,6 +2,7 @@ package loader_test
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/bdpiprava/scalar-go/loader"
@@ -45,10 +46,14 @@ func Test_Load_DocumentedPath(t *testing.T) {
 
 	paths := spec.DocumentedPaths()
 
+	sort.Slice(paths, func(i, j int) bool {
+		return paths[i].String() <= paths[j].String()
+	})
+
 	assert.Len(t, paths, 3)
 	assert.Equal(t, model.DocumentedPath{Path: "/pets", Method: "get"}, paths[0])
-	assert.Equal(t, model.DocumentedPath{Path: "/pets", Method: "post"}, paths[1])
-	assert.Equal(t, model.DocumentedPath{Path: "/pets/{petId}", Method: "get"}, paths[2])
+	assert.Equal(t, model.DocumentedPath{Path: "/pets/{petId}", Method: "get"}, paths[1])
+	assert.Equal(t, model.DocumentedPath{Path: "/pets", Method: "post"}, paths[2])
 }
 
 func Test_Load_XTagGroups(t *testing.T) {
@@ -57,15 +62,15 @@ func Test_Load_XTagGroups(t *testing.T) {
 
 	assert.Len(t, spec.TagsGroup, 2)
 	assert.Equal(t, model.TagGroup{
-		Name:"GroupOne", 
-		Description:"These are the GroupOne APIs", 
-		Tags:[]string{ "SubGroup1.1", "SubGroup1.2" },
+		Name:        "GroupOne",
+		Description: "These are the GroupOne APIs",
+		Tags:        []string{"SubGroup1.1", "SubGroup1.2"},
 	}, spec.TagsGroup[0])
 
 	assert.Equal(t, model.TagGroup{
-		Name:"GroupTwo", 
-		Description:"These are the GroupTwo APIs", 
-		Tags:[]string{ "SubGroup2.1" },
+		Name:        "GroupTwo",
+		Description: "These are the GroupTwo APIs",
+		Tags:        []string{"SubGroup2.1"},
 	}, spec.TagsGroup[1])
 }
 
