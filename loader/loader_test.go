@@ -51,6 +51,24 @@ func Test_Load_DocumentedPath(t *testing.T) {
 	assert.Equal(t, model.DocumentedPath{Path: "/pets/{petId}", Method: "get"}, paths[2])
 }
 
+func Test_Load_XTagGroups(t *testing.T) {
+	spec, err := loader.LoadWithName("../data/xTagGroups", "withXTagGroups.yaml")
+	assert.NoError(t, err)
+
+	assert.Len(t, spec.TagsGroup, 2)
+	assert.Equal(t, model.TagGroup{
+		Name:"GroupOne", 
+		Description:"These are the GroupOne APIs", 
+		Tags:[]string{ "SubGroup1.1", "SubGroup1.2" },
+	}, spec.TagsGroup[0])
+
+	assert.Equal(t, model.TagGroup{
+		Name:"GroupTwo", 
+		Description:"These are the GroupTwo APIs", 
+		Tags:[]string{ "SubGroup2.1" },
+	}, spec.TagsGroup[1])
+}
+
 func getPathParam(params []interface{}, name string) model.GenericObject {
 	for _, param := range params {
 		if param.(model.GenericObject)["name"] == name {

@@ -1,0 +1,11 @@
+openapi: "3.0.0"
+x-tagGroups:
+  - name: GroupOne
+    description: These are the GroupOne APIs
+    tags:
+      - SubGroup1.1
+      - SubGroup1.2
+  - name: GroupTwo
+    description: These are the GroupTwo APIs
+    tags:
+      - SubGroup2.1
