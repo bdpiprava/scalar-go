@@ -8,16 +8,18 @@ jobs:
   build:
     name: Create Release
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
       
       - name: changelog-ci
         uses: saadmk11/changelog-ci@v1.1.2
+        id: changelog-ci
         with:
           release_version: ${{ github.ref }}
-        id: changelog-ci
        
-       - name: Setup Go
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: 1.22
