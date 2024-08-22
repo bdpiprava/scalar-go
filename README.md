@@ -79,6 +79,7 @@ import (
 	"net/http"
 
 	scalargo "github.com/bdpiprava/scalar-go"
+    "github.com/bdpiprava/scalar-go/model"
 )
 
 func main() {
@@ -87,6 +88,11 @@ func main() {
 		content, err := scalargo.New(
 			apiDir,
 			scalargo.WithBaseFileName("api.yml"),
+            scalargo.WithSpecModifier(func(spec *model.Spec) *model.Spec {
+			  // Customise the spec here
+              spec.Info.Title = "PetStore API"
+              return spec
+            }),
 		)
 
 		if err != nil {
