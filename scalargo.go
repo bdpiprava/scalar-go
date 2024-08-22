@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bdpiprava/scalar-go/loader"
+	"github.com/bdpiprava/scalar-go/model"
 )
 
 const DefaultCDN = "https://cdn.jsdelivr.net/npm/@scalar/api-reference"
@@ -36,25 +37,29 @@ const (
 	LayoutClassic Layout = "classic"
 )
 
+// SpecModifier is a function that can be used to override the spec
+type SpecModifier func(spec *model.Spec) *model.Spec
+
 type Options struct {
-	Theme              Theme    `json:"theme,omitempty"`
-	Layout             Layout   `json:"layout,omitempty"`
-	Proxy              string   `json:"proxy,omitempty"`
-	IsEditable         bool     `json:"isEditable,omitempty"`
-	ShowSidebar        bool     `json:"showSidebar,omitempty"`
-	HideModels         bool     `json:"hideModels,omitempty"`
-	HideDownloadButton bool     `json:"hideDownloadButton,omitempty"`
-	DarkMode           bool     `json:"darkMode,omitempty"`
-	SearchHotKey       string   `json:"searchHotKey,omitempty"`
-	MetaData           string   `json:"metaData,omitempty"`
-	HiddenClients      []string `json:"hiddenClients,omitempty"`
-	Authentication     string   `json:"authentication,omitempty"`
-	PathRouting        string   `json:"pathRouting,omitempty"`
-	BaseServerURL      string   `json:"baseServerUrl,omitempty"`
-	WithDefaultFonts   bool     `json:"withDefaultFonts,omitempty"`
-	OverrideCSS        string   `json:"-"`
-	BaseFileName       string   `json:"-"`
-	CDN                string   `json:"-"`
+	Theme              Theme        `json:"theme,omitempty"`
+	Layout             Layout       `json:"layout,omitempty"`
+	Proxy              string       `json:"proxy,omitempty"`
+	IsEditable         bool         `json:"isEditable,omitempty"`
+	ShowSidebar        bool         `json:"showSidebar,omitempty"`
+	HideModels         bool         `json:"hideModels,omitempty"`
+	HideDownloadButton bool         `json:"hideDownloadButton,omitempty"`
+	DarkMode           bool         `json:"darkMode,omitempty"`
+	SearchHotKey       string       `json:"searchHotKey,omitempty"`
+	MetaData           string       `json:"metaData,omitempty"`
+	HiddenClients      []string     `json:"hiddenClients,omitempty"`
+	Authentication     string       `json:"authentication,omitempty"`
+	PathRouting        string       `json:"pathRouting,omitempty"`
+	BaseServerURL      string       `json:"baseServerUrl,omitempty"`
+	WithDefaultFonts   bool         `json:"withDefaultFonts,omitempty"`
+	OverrideCSS        string       `json:"-"`
+	BaseFileName       string       `json:"-"`
+	CDN                string       `json:"-"`
+	OverrideHandler    SpecModifier `json:"-"`
 }
 
 type Option func(*Options)
@@ -185,6 +190,13 @@ func WithBaseFileName(baseFileName string) func(*Options) {
 	}
 }
 
+// WithSpecModifier allows to modify the spec before rendering
+func WithSpecModifier(handler SpecModifier) func(*Options) {
+	return func(o *Options) {
+		o.OverrideHandler = handler
+	}
+}
+
 // New generates the HTML for the Scalar UI
 func New(apiFilesDir string, opts ...Option) (string, error) {
 	options := &Options{
@@ -201,6 +213,10 @@ func New(apiFilesDir string, opts ...Option) (string, error) {
 	spec, err := loader.LoadWithName(apiFilesDir, options.BaseFileName)
 	if err != nil {
 		return "", err
+	}
+
+	if options.OverrideHandler != nil {
+		spec = options.OverrideHandler(spec)
 	}
 
 	content, err := json.Marshal(spec)
