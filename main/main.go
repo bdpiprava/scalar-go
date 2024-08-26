@@ -19,7 +19,9 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		w.Write([]byte(content))
+
+		_, _ = w.Write([]byte(content))
 	})
-	http.ListenAndServe(":8090", nil)
+
+	_ = http.ListenAndServe(":8090", nil)
 }

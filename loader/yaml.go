@@ -65,7 +65,7 @@ func readDirRecursively(dir string, key string) (*model.GenericObject, error) {
 			return nil, err
 		}
 
-		if fileContent == nil || len(fileContent) == 0 {
+		if len(fileContent) == 0 {
 			continue
 		}
 
