@@ -138,14 +138,7 @@ func assertPaths(t *testing.T, spec *model.Spec) {
 			},
 		},
 		"default": model.GenericObject{
-			"content": model.GenericObject{
-				"application/json": model.GenericObject{
-					"schema": model.GenericObject{
-						"$ref": "#/components/schemas/Error",
-					},
-				},
-			},
-			"description": "unexpected error",
+			"$ref": "#/components/responses/Error",
 		},
 	}, pathGetPets["responses"])
 }
