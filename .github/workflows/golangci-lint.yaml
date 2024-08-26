@@ -1,8 +1,9 @@
-name: golangci-lint
+name: "GoLang Lint"
 
 on:
   push:
-    - main
+    branches:
+      - main
   pull_request:
     branches:
       - master
