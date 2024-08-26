@@ -7,32 +7,6 @@ import (
 // DefaultCDN default CDN for api-reference
 const DefaultCDN = "https://cdn.jsdelivr.net/npm/@scalar/api-reference"
 
-// Theme as a type based on string for theme identification
-type Theme string
-
-const (
-	ThemeDefault    Theme = "default"
-	ThemeAlternate  Theme = "alternate"
-	ThemeMoon       Theme = "moon"
-	ThemePurple     Theme = "purple"
-	ThemeSolarized  Theme = "solarized"
-	ThemeBluePlanet Theme = "bluePlanet"
-	ThemeDeepSpace  Theme = "deepSpace"
-	ThemeSaturn     Theme = "saturn"
-	ThemeKepler     Theme = "kepler"
-	ThemeMars       Theme = "mars"
-	ThemeNone       Theme = "none"
-	ThemeNil        Theme = ""
-)
-
-// Layout represents different layout options
-type Layout string
-
-const (
-	LayoutModern  Layout = "modern"
-	LayoutClassic Layout = "classic"
-)
-
 // SpecModifier is a function that can be used to override the spec
 type SpecModifier func(spec *model.Spec) *model.Spec
 
@@ -45,13 +19,16 @@ type Options struct {
 	HideModels         bool         `json:"hideModels,omitempty"`
 	HideDownloadButton bool         `json:"hideDownloadButton,omitempty"`
 	DarkMode           bool         `json:"darkMode,omitempty"`
+	FroceDarkMode      bool         `json:"forceDarkModeState,omitempty"`
+	HideDarkModeToggle bool         `json:"hideDarkModeToggle,omitempty"`
 	SearchHotKey       string       `json:"searchHotKey,omitempty"`
-	MetaData           string       `json:"metaData,omitempty"`
 	HiddenClients      []string     `json:"hiddenClients,omitempty"`
 	Authentication     string       `json:"authentication,omitempty"`
 	PathRouting        string       `json:"pathRouting,omitempty"`
 	BaseServerURL      string       `json:"baseServerUrl,omitempty"`
 	WithDefaultFonts   bool         `json:"withDefaultFonts,omitempty"`
+	Servers            []Server     `json:"servers,omitempty"`
+	MetaData           MetaData     `json:"metadata,omitempty"`
 	OverrideCSS        string       `json:"-"`
 	BaseFileName       string       `json:"-"`
 	CDN                string       `json:"-"`
@@ -59,20 +36,6 @@ type Options struct {
 }
 
 type Option func(*Options)
-
-// WithTheme sets the theme for the Scalar UI
-func WithTheme(theme Theme) func(*Options) {
-	return func(o *Options) {
-		o.Theme = theme
-	}
-}
-
-// WithLayout sets the layout for the Scalar UI
-func WithLayout(layout Layout) func(*Options) {
-	return func(o *Options) {
-		o.Layout = layout
-	}
-}
 
 // WithCDN sets the CDN for the Scalar UI
 func WithCDN(cdn string) func(*Options) {
@@ -123,17 +86,24 @@ func WithDarkMode() func(*Options) {
 	}
 }
 
+// WithForceDarkMode makes it always this state no matter what
+func WithForceDarkMode() func(*Options) {
+	return func(o *Options) {
+		o.FroceDarkMode = true
+	}
+}
+
+// WithHideDarkModeToggle hides the dark mode toggle button
+func WithHideDarkModeToggle() func(*Options) {
+	return func(o *Options) {
+		o.HideDarkModeToggle = true
+	}
+}
+
 // WithSearchHotKey sets the search hot key for the Scalar UI
 func WithSearchHotKey(searchHotKey string) func(*Options) {
 	return func(o *Options) {
 		o.SearchHotKey = searchHotKey
-	}
-}
-
-// WithMetaData sets the metadata for the Scalar UI
-func WithMetaData(metaData string) func(*Options) {
-	return func(o *Options) {
-		o.MetaData = metaData
 	}
 }
 
