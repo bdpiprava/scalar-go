@@ -36,10 +36,12 @@ Expected directory structure:
     │   ├── pet.yaml
     │   ├── user.yaml
     │   └── order.yaml
-    └── paths/              // directory for path files
-        ├── pet.yaml
-        ├── user.yaml
-        └── order.yaml
+    ├── paths/              // directory for path files
+    │   ├── pet.yaml
+    │   ├── user.yaml
+    │   └── order.yaml
+    ├── responses/          // directory for response files
+    └── └── Error.yaml
 ```
 
 ```go

@@ -20,12 +20,19 @@ func LoadWithName(rootDir string, apiFileName string) (*model.Spec, error) {
 	specContent.Paths = initializeIfNil(specContent.Paths)
 	specContent.Components.Schemas = initializeIfNil(specContent.Components.Schemas)
 	specContent.Components.Parameters = initializeIfNil(specContent.Components.Parameters)
+	specContent.Components.Responses = initializeIfNil(specContent.Components.Responses)
 
 	paths, err := readDirRecursively(filepath.Join(rootDir, "paths"), "paths")
 	if err != nil {
 		return nil, err
 	}
 	maps.Copy(specContent.Paths, *paths)
+
+	responses, err := readDirRecursively(filepath.Join(rootDir, "responses"), "responses")
+	if err != nil {
+		return nil, err
+	}
+	maps.Copy(specContent.Components.Responses, *responses)
 
 	schemas, err := readDirRecursively(filepath.Join(rootDir, "schemas"), "schemas")
 	if err != nil {
