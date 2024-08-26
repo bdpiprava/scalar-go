@@ -37,6 +37,6 @@ jobs:
 
       - name: Run semantic-release
         if: github.repository == 'bdpiprava/scalar-go' && github.event_name == 'push'
-        run: npx semantic-release@v19.0.2
+        run: npx semantic-release@v19.0.2 --branches main --ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
