@@ -1,8 +1,14 @@
-name: Run unit tests
-on: [push]
+name: "PR: Unit Test"
+
+on:
+  pull_request:
+    branches:
+      - master
+      - main
 
 jobs:
   unit-tests:
+    name: Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
