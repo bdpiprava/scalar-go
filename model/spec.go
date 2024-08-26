@@ -2,8 +2,10 @@ package model
 
 import "fmt"
 
+// GenericObject represets the generic yaml or json object where key is always string and value can be anything
 type GenericObject map[string]any
 
+// DocumentedPath holds information about documented path with method
 type DocumentedPath struct {
 	Path   string
 	Method string
@@ -24,13 +26,14 @@ type Spec struct {
 func (s Spec) DocumentedPaths() []DocumentedPath {
 	paths := make([]DocumentedPath, 0)
 	for path, methods := range s.Paths {
-		for method, _ := range methods.(GenericObject) {
+		for method := range methods.(GenericObject) {
 			paths = append(paths, DocumentedPath{Path: path, Method: method})
 		}
 	}
 	return paths
 }
 
+// String returns method and path joined by '_'
 func (d DocumentedPath) String() string {
 	return fmt.Sprintf("%s_%s", d.Method, d.Path)
 }
