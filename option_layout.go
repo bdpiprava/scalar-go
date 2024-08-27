@@ -11,6 +11,6 @@ const (
 // WithLayout sets the layout for the Scalar UI
 func WithLayout(layout Layout) func(*Options) {
 	return func(o *Options) {
-		o.Layout = layout
+		o.Configurations[keyLayout] = layout
 	}
 }

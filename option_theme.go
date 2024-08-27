@@ -21,6 +21,6 @@ const (
 // WithTheme sets the theme for the Scalar UI
 func WithTheme(theme Theme) func(*Options) {
 	return func(o *Options) {
-		o.Theme = theme
+		o.Configurations[keyTheme] = theme
 	}
 }

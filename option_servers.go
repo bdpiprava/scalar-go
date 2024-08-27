@@ -9,6 +9,6 @@ type Server struct {
 // WithServers servers to override the openapi spec servers
 func WithServers(servers ...Server) func(*Options) {
 	return func(o *Options) {
-		o.Servers = servers
+		o.Configurations[keyServers] = servers
 	}
 }

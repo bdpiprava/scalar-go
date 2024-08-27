@@ -1,38 +1,47 @@
 package scalargo
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/bdpiprava/scalar-go/model"
 )
 
 // DefaultCDN default CDN for api-reference
 const DefaultCDN = "https://cdn.jsdelivr.net/npm/@scalar/api-reference"
 
+const (
+	keyTheme              = "theme"
+	keyLayout             = "layout"
+	keyProxy              = "proxy"
+	keyIsEditable         = "isEditable"
+	keyShowSidebar        = "showSidebar"
+	keyHideModels         = "hideModels"
+	keyHideDownloadButton = "hideDownloadButton"
+	keyDarkMode           = "darkMode"
+	keyFroceDarkMode      = "forceDarkModeState"
+	keyHideDarkModeToggle = "hideDarkModeToggle"
+	keySearchHotKey       = "searchHotKey"
+	keyHiddenClients      = "hiddenClients"
+	keyAuthentication     = "authentication"
+	keyPathRouting        = "pathRouting"
+	keyBaseServerURL      = "baseServerUrl"
+	keyWithDefaultFonts   = "withDefaultFonts"
+	keyServers            = "servers"
+	keyMetaData           = "metadata"
+)
+
 // SpecModifier is a function that can be used to override the spec
 type SpecModifier func(spec *model.Spec) *model.Spec
 
 type Options struct {
-	Theme              Theme        `json:"theme,omitempty"`
-	Layout             Layout       `json:"layout,omitempty"`
-	Proxy              string       `json:"proxy,omitempty"`
-	IsEditable         bool         `json:"isEditable,omitempty"`
-	ShowSidebar        bool         `json:"showSidebar,omitempty"`
-	HideModels         bool         `json:"hideModels,omitempty"`
-	HideDownloadButton bool         `json:"hideDownloadButton,omitempty"`
-	DarkMode           bool         `json:"darkMode,omitempty"`
-	FroceDarkMode      bool         `json:"forceDarkModeState,omitempty"`
-	HideDarkModeToggle bool         `json:"hideDarkModeToggle,omitempty"`
-	SearchHotKey       string       `json:"searchHotKey,omitempty"`
-	HiddenClients      []string     `json:"hiddenClients,omitempty"`
-	Authentication     string       `json:"authentication,omitempty"`
-	PathRouting        string       `json:"pathRouting,omitempty"`
-	BaseServerURL      string       `json:"baseServerUrl,omitempty"`
-	WithDefaultFonts   bool         `json:"withDefaultFonts,omitempty"`
-	Servers            []Server     `json:"servers,omitempty"`
-	MetaData           MetaData     `json:"metadata,omitempty"`
-	OverrideCSS        string       `json:"-"`
-	BaseFileName       string       `json:"-"`
-	CDN                string       `json:"-"`
-	OverrideHandler    SpecModifier `json:"-"`
+	Configurations map[string]any
+	OverrideCSS    string
+	BaseFileName   string
+	CDN            string
+	SpecModifier   SpecModifier
+	SpecDirectory  string
+	SpecURL        string
 }
 
 type Option func(*Options)
@@ -47,70 +56,82 @@ func WithCDN(cdn string) func(*Options) {
 // WithProxy sets the proxy for the Scalar UI
 func WithProxy(proxy string) func(*Options) {
 	return func(o *Options) {
-		o.Proxy = proxy
+		o.Configurations[keyProxy] = proxy
 	}
 }
 
 // WithEditable sets the editable state for the Scalar UI
 func WithEditable() func(*Options) {
 	return func(o *Options) {
-		o.IsEditable = true
+		o.Configurations[keyIsEditable] = true
 	}
 }
 
 // WithSidebarVisibility sets the sidebar visibility for the Scalar UI
 func WithSidebarVisibility(visible bool) func(*Options) {
 	return func(o *Options) {
-		o.ShowSidebar = visible
+		o.Configurations[keyShowSidebar] = visible
 	}
 }
 
 // WithHideModels sets the models visibility for the Scalar UI
 func WithHideModels() func(*Options) {
 	return func(o *Options) {
-		o.HideModels = true
+		o.Configurations[keyHideModels] = true
 	}
 }
 
-// WithHideDownloadButton sets the download button visibility for the Scalar UI
+// WithHideDownloadButton hide to download OpenAPI spec button
 func WithHideDownloadButton() func(*Options) {
 	return func(o *Options) {
-		o.HideDownloadButton = true
+		o.Configurations[keyHideDownloadButton] = true
 	}
 }
 
-// WithDarkMode sets the dark mode for the Scalar UI
+// WithDarkMode set the dark mode as default
 func WithDarkMode() func(*Options) {
 	return func(o *Options) {
-		o.DarkMode = true
+		o.Configurations[keyDarkMode] = true
 	}
 }
 
 // WithForceDarkMode makes it always this state no matter what
 func WithForceDarkMode() func(*Options) {
 	return func(o *Options) {
-		o.FroceDarkMode = true
+		o.Configurations[keyFroceDarkMode] = true
 	}
 }
 
 // WithHideDarkModeToggle hides the dark mode toggle button
 func WithHideDarkModeToggle() func(*Options) {
 	return func(o *Options) {
-		o.HideDarkModeToggle = true
+		o.Configurations[keyHideDarkModeToggle] = true
 	}
 }
 
 // WithSearchHotKey sets the search hot key for the Scalar UI
 func WithSearchHotKey(searchHotKey string) func(*Options) {
 	return func(o *Options) {
-		o.SearchHotKey = searchHotKey
+		o.Configurations[keySearchHotKey] = searchHotKey
 	}
 }
 
-// WithHiddenClients sets the hidden clients for the Scalar UI
-func WithHiddenClients(hiddenClients []string) func(*Options) {
+// WithHiddenClients hide the set clients
+func WithHiddenClients(hiddenClients ...string) func(*Options) {
 	return func(o *Options) {
-		o.HiddenClients = hiddenClients
+		value := o.Configurations[keyHiddenClients]
+
+		// WithHideAllClients() takes precedence over this
+		if strings.ToLower(fmt.Sprintf("%v", value)) != "true" {
+			o.Configurations[keyHiddenClients] = hiddenClients
+		}
+	}
+}
+
+// WithHideAllClients sets the hidden clients for the Scalar UI
+func WithHideAllClients() func(*Options) {
+	return func(o *Options) {
+		o.Configurations[keyHiddenClients] = true
 	}
 }
 
@@ -124,28 +145,28 @@ func WithOverrideCSS(overrideCSS string) func(*Options) {
 // WithAuthentication sets the authentication method for the Scalar UI
 func WithAuthentication(authentication string) func(*Options) {
 	return func(o *Options) {
-		o.Authentication = authentication
+		o.Configurations[keyAuthentication] = authentication
 	}
 }
 
 // WithPathRouting sets the path routing for the Scalar UI
 func WithPathRouting(pathRouting string) func(*Options) {
 	return func(o *Options) {
-		o.PathRouting = pathRouting
+		o.Configurations[keyPathRouting] = pathRouting
 	}
 }
 
 // WithBaseServerURL sets the base server URL for the Scalar UI
 func WithBaseServerURL(baseServerURL string) func(*Options) {
 	return func(o *Options) {
-		o.BaseServerURL = baseServerURL
+		o.Configurations[keyBaseServerURL] = baseServerURL
 	}
 }
 
 // WithDefaultFonts sets the default fonts usage for the Scalar UI
 func WithDefaultFonts() func(*Options) {
 	return func(o *Options) {
-		o.WithDefaultFonts = true
+		o.Configurations[keyWithDefaultFonts] = true
 	}
 }
 
@@ -159,6 +180,20 @@ func WithBaseFileName(baseFileName string) func(*Options) {
 // WithSpecModifier allows to modify the spec before rendering
 func WithSpecModifier(handler SpecModifier) func(*Options) {
 	return func(o *Options) {
-		o.OverrideHandler = handler
+		o.SpecModifier = handler
+	}
+}
+
+// WithSpecDir read spec from directory
+func WithSpecDir(specDir string) func(*Options) {
+	return func(o *Options) {
+		o.SpecDirectory = specDir
+	}
+}
+
+// WithSpecURL set the spec URL in the doc
+func WithSpecURL(specURL string) func(*Options) {
+	return func(o *Options) {
+		o.SpecURL = specURL
 	}
 }

@@ -14,7 +14,9 @@ func WithMetaDataOpts(metadataOpts ...MetaOption) func(*Options) {
 	}
 
 	return func(o *Options) {
-		o.MetaData = metadata
+		for k, v := range metadata {
+			o.Configurations[keyMetaData].(MetaData)[k] = v
+		}
 	}
 }
 
