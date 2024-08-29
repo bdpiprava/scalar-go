@@ -17,8 +17,8 @@ content, err := scalargo.New("/example/docs/")
 
 // When file is located in directory /example/docs/ and filename is different from default lookup name e.g. petstore.yaml
 content, err := scalargo.New(
-"/example/docs/",
-scalargo.WithBaseFileName("petstore.yaml"),
+    "/example/docs/",
+    scalargo.WithBaseFileName("petstore.yaml"),
 )
 ```
 
@@ -78,37 +78,38 @@ and customer options for easy of documenting APIs:
 package main
 
 import (
-	"net/http"
+    "net/http"
 
-	scalargo "github.com/bdpiprava/scalar-go"
+    scalargo "github.com/bdpiprava/scalar-go"
     "github.com/bdpiprava/scalar-go/model"
 )
 
 func main() {
-	apiDir := "path/to/api/directory"
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		content, err := scalargo.New(
-			apiDir,
-			scalargo.WithBaseFileName("api.yml"),
-            scalargo.WithSpecModifier(func(spec *model.Spec) *model.Spec {
-			  // Customise the spec here
+    apiDir := "path/to/api/directory"
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        content, err := scalargo.New(
+            apiDir,
+            scalargo.WithBaseFileName("api.yml"),
+            scalargo.WithSpecModifier(func(spec *model.Spec) *model.Spec { 
+              // Customise the spec here
               spec.Info.Title = "PetStore API"
               return spec
             }),
-		)
+        )
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Write([]byte(content))
-	})
-	http.ListenAndServe(":8090", nil)
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        w.Write([]byte(content))
+    })
+    http.ListenAndServe(":8090", nil)
 }
 ```
+
+See the [examples](./main/main.go) for more details.
 
 ## Credits 🙏
 
 - [Scalar](https://github.com/scalar/scalar) - The project that inspired this package.
-- [Go Scalar API Reference](https://github.com/MarceloPetrucio/go-scalar-api-reference) - The package that inspired this
-  package.
+- [Go Scalar API Reference](https://github.com/MarceloPetrucio/go-scalar-api-reference) - The package that inspired this package.

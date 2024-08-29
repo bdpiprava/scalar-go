@@ -1,0 +1,183 @@
+<html lang="en">
+<head>
+    <title>Scalar-go examples</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            text-decoration: none;
+        }
+
+        :root {
+            --accent-color: #fff;
+            --gradient-color: #FBFBFB;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            background-image: linear-gradient(-45deg, #e3eefe 0%, #efddfb 100%);
+        }
+
+        .sidebar {
+            position: fixed;
+            width: 240px;
+            left: 0;
+            height: 100%;
+            background-color: #fff;
+            transition: all .5s ease;
+        }
+
+        .sidebar header {
+            font-size: 28px;
+            color: #353535;
+            line-height: 70px;
+            text-align: center;
+            background-color: #fff;
+            user-select: none;
+            font-family: 'Lato', sans-serif;
+        }
+
+        .sidebar a {
+            display: flex;
+            height: 65px;
+            width: 100%;
+            color: #353535;
+            padding-left: 30px;
+            box-sizing: border-box;
+            border-left: 5px solid transparent;
+            font-family: 'Lato', sans-serif;
+            transition: all .5s ease;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        a.active, a:hover {
+            border-left: 5px solid var(--accent-color);
+            color: #fff;
+            background: linear-gradient(to left, var(--accent-color), var(--gradient-color));
+        }
+
+        .sidebar a i {
+            font-size: 23px;
+            margin-right: 16px;
+        }
+
+        .sidebar a span {
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .sidebar > a.active, .sidebar > a:hover:nth-child(even) {
+            --accent-color: #52d6f4;
+            --gradient-color: #c1b1f7;
+        }
+
+        .sidebar a.active, .sidebar > a:hover:nth-child(odd) {
+            --accent-color: #c1b1f7;
+            --gradient-color: #A890FE;
+        }
+
+
+        .preview {
+            width: calc(100% - 240px);
+            height: 100%;
+            margin-left: 240px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview .code {
+            width: 100%;
+            border-right: 1px solid;
+            padding: 20px;
+            background: aliceblue;
+        }
+
+        .preview iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+        }
+
+        h2 {
+            position: relative;
+            text-align: center;
+            color: #353535;
+            font-size: 60px;
+            font-family: 'Lato', sans-serif;
+            margin: 0;
+            color: #a759f5;
+        }
+
+        p {
+            font-family: 'Lato', sans-serif;
+            font-weight: 300;
+            text-align: center;
+            font-size: 30px;
+            color: #d6adff;
+            margin: 0;
+        }
+
+        .header {
+            background: #353535;
+            padding: 20px;
+            color: #FBFBFB;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+    <script type="application/javascript">
+        function renderExample(example, idx) {
+            document.body.querySelector('iframe').src = `${example.path}`;
+            document.body.querySelector('.language-go').innerHTML = hljs.highlight(example.code, {language: 'go'}).value;
+            document.body.querySelector(`.example_${idx}`).classList.add('active');
+            document.body.querySelectorAll('.sidebar a').forEach((el, i) => {
+                if (i !== idx) {
+                    el.classList.remove('active');
+                }
+            });
+        }
+
+        function addExampleToSidebar(example, idx) {
+            const a = document.createElement('a');
+            a.setAttribute("class", `example_${idx}`);
+            const span = document.createElement('span');
+            span.innerText = example.name;
+            a.appendChild(span);
+            a.onclick = function () {
+                renderExample(example, idx);
+            };
+            document.body.querySelector('.sidebar').appendChild(a);
+        }
+
+        (function () {
+            fetch('/list')
+                .then(response => response.json())
+                .then(list => {
+                    for (let i = 0; i < list.length; i++) {
+                        addExampleToSidebar(list[i], i);
+                    }
+                    renderExample(list[0], 0);
+                });
+        })();
+    </script>
+</head>
+<body>
+<div class="sidebar">
+    <header>Examples</header>
+</div>
+<div class="preview">
+    <div class="header"><h1>Code</h1></div>
+    <div class="code">
+        <pre><code class="language-go"></code></pre>
+    </div>
+    <iframe></iframe>
+</div>
+</body>
+</html>
