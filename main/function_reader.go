@@ -36,7 +36,7 @@ func readFuncBody(fn reflect.Value) (string, error) {
 			return "", err
 		}
 		defer fp.Close()
-		fp.Seek(int64(find.Block.Lbrace-1), 0)
+		_, _ = fp.Seek(int64(find.Block.Lbrace-1), 0)
 		buf := make([]byte, int64(find.Block.Rbrace-find.Block.Lbrace))
 		_, err = io.ReadFull(fp, buf)
 		if err != nil {
