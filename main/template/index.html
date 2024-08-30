@@ -132,41 +132,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
-    <script type="application/javascript">
-        function renderExample(example, idx) {
-            document.body.querySelector('iframe').src = `${example.path}`;
-            document.body.querySelector('.language-go').innerHTML = hljs.highlight(example.code, {language: 'go'}).value;
-            document.body.querySelector(`.example_${idx}`).classList.add('active');
-            document.body.querySelectorAll('.sidebar a').forEach((el, i) => {
-                if (i !== idx) {
-                    el.classList.remove('active');
-                }
-            });
-        }
-
-        function addExampleToSidebar(example, idx) {
-            const a = document.createElement('a');
-            a.setAttribute("class", `example_${idx}`);
-            const span = document.createElement('span');
-            span.innerText = example.name;
-            a.appendChild(span);
-            a.onclick = function () {
-                renderExample(example, idx);
-            };
-            document.body.querySelector('.sidebar').appendChild(a);
-        }
-
-        (function () {
-            fetch('/list')
-                .then(response => response.json())
-                .then(list => {
-                    for (let i = 0; i < list.length; i++) {
-                        addExampleToSidebar(list[i], i);
-                    }
-                    renderExample(list[0], 0);
-                });
-        })();
-    </script>
 </head>
 <body>
 <div class="sidebar">
@@ -179,5 +144,39 @@
     </div>
     <iframe></iframe>
 </div>
+<script type="application/javascript">
+    const examples = {{ . }};
+
+    function renderExample(example, idx) {
+        const blob = new Blob([example.output], {type: "text/html; charset=utf-8"});
+        document.body.querySelector('iframe').src = URL.createObjectURL(blob);
+        document.body.querySelector('.language-go').innerHTML = hljs.highlight(example.code, {language: 'go'}).value;
+        document.body.querySelector(`.example_${idx}`).classList.add('active');
+        document.body.querySelectorAll('.sidebar a').forEach((el, i) => {
+            if (i !== idx) {
+                el.classList.remove('active');
+            }
+        });
+    }
+
+    function addExampleToSidebar(example, idx) {
+        const a = document.createElement('a');
+        a.setAttribute("class", `example_${idx}`);
+        const span = document.createElement('span');
+        span.innerText = example.name;
+        a.appendChild(span);
+        a.onclick = function () {
+            renderExample(example, idx);
+        };
+        document.querySelector(".sidebar").appendChild(a);
+    }
+
+    (function () {
+        for (let i = 0; i < examples.length; i++) {
+            addExampleToSidebar(examples[i], i);
+        }
+        renderExample(examples[0], 0);
+    })();
+</script>
 </body>
 </html>

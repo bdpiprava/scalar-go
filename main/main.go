@@ -2,11 +2,21 @@ package main
 
 import (
 	"encoding/json"
+	"html/template"
 	"net/http"
+	"os"
 	"reflect"
 
 	scalargo "github.com/bdpiprava/scalar-go"
 )
+
+type Example struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Path        string `json:"path"`
+	Code        string `json:"code"`
+	Output      string `json:"output"`
+}
 
 const loadFromManyFiles = "./data/loader-multiple-files"
 
@@ -74,44 +84,34 @@ func main() {
 	http.HandleFunc("/servers-override", handler(exampleForServersOverride))
 	http.HandleFunc("/other-configs", handler(exampleForOtherConfigs))
 	http.HandleFunc("/list", examples)
-	http.Handle("/", http.FileServer(http.Dir("./main/static")))
+	http.HandleFunc("/", func(w http.ResponseWriter, request *http.Request) {
+		buildStatic()
+		http.FileServer(http.Dir("./main/static")).ServeHTTP(w, request)
+	})
 
 	println("Starting server at http://localhost:8090")
 	_ = http.ListenAndServe(":8090", nil)
 }
 
-func examples(w http.ResponseWriter, request *http.Request) {
-	examples := []struct {
-		Name        string `json:"name"`
-		Description string `json:"description"`
-		Path        string `json:"path"`
-		Code        string `json:"code"`
-	}{
-		{
-			Name:        "Reading Spec from Directory",
-			Description: "This example shows how to read the spec from multiple files in a directory",
-			Path:        "/spec-dir",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForSpecDir)),
-		},
-		{
-			Name:        "Reading Spec from URL and Metadata Usage",
-			Description: "This example shows how to read the spec from a URL and add metadata",
-			Path:        "/spec-url",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForSpecURLAndMetadataUsage)),
-		},
-		{
-			Name:        "Servers Override",
-			Description: "This example shows how to read the spec from a URL and override the servers",
-			Path:        "/servers-override",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForServersOverride)),
-		},
-		{
-			Name:        "Other Configs",
-			Description: "This example shows how to read the spec from a URL and add other configurations",
-			Path:        "/other-configs",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForOtherConfigs)),
-		},
+func buildStatic() {
+	tmpl, err := template.New("index.html").ParseFiles("./main/template/index.html")
+	if err != nil {
+		panic(err)
 	}
+
+	f, err := os.Create("./main/static/index.html")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	err = tmpl.Execute(f, getExamples())
+	if err != nil {
+		panic(err)
+	}
+}
+
+func examples(w http.ResponseWriter, request *http.Request) {
+	examples := getExamples()
 
 	data, err := json.Marshal(examples)
 	if err != nil {
@@ -120,4 +120,42 @@ func examples(w http.ResponseWriter, request *http.Request) {
 	}
 
 	_, _ = w.Write(data)
+}
+
+func getExamples() []Example {
+	return []Example{
+		{
+			Name:        "Reading Spec from Directory",
+			Description: "This example shows how to read the spec from multiple files in a directory",
+			Path:        "/spec-dir",
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForSpecDir)),
+			Output:      ignoreError(exampleForSpecDir),
+		},
+		{
+			Name:        "Reading Spec from URL and Metadata Usage",
+			Description: "This example shows how to read the spec from a URL and add metadata",
+			Path:        "/spec-url",
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForSpecURLAndMetadataUsage)),
+			Output:      ignoreError(exampleForSpecURLAndMetadataUsage),
+		},
+		{
+			Name:        "Servers Override",
+			Description: "This example shows how to read the spec from a URL and override the servers",
+			Path:        "/servers-override",
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForServersOverride)),
+			Output:      ignoreError(exampleForServersOverride),
+		},
+		{
+			Name:        "Other Configs",
+			Description: "This example shows how to read the spec from a URL and add other configurations",
+			Path:        "/other-configs",
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForOtherConfigs)),
+			Output:      ignoreError(exampleForOtherConfigs),
+		},
+	}
+}
+
+func ignoreError(fn ExampleFn) string {
+	content, _ := fn()
+	return content
 }
