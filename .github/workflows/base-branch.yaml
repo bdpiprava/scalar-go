@@ -79,7 +79,7 @@ jobs:
       - name: Install dependencies
         run: go get .
       - name: Generate Docs
-        run: go run ./main/main.go -generate
+        run: make generate-doc
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
