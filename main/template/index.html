@@ -79,6 +79,10 @@
         document.body.querySelector('iframe').src = URL.createObjectURL(blob);
         document.querySelector('.workspace .tab-content     code').innerHTML = hljs.highlight(example.code, {language: 'go'}).value;
         document.querySelector('.workspace .description').innerHTML = example.description;
+        document.body.querySelectorAll('.sidebar .nav-link').forEach((el, i) => {
+            el.classList.remove('active');
+        });
+        document.body.querySelector(`.example_${idx}`).classList.add('active');
     }
 
     function addExampleToSidebar(example, idx) {

@@ -11,6 +11,8 @@ Supports reading API specification from a directory with multiple files, a singl
 
 ### Reading from single file
 
+See [Documentation](https://bdpiprava.github.io/scalar-go) for more details.
+
 ```go
 // When file is located in directory /example/docs/ and filename is api.yaml(default lookup name)
 content, err := scalargo.New("/example/docs/")
