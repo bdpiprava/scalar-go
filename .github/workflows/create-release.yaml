@@ -1,0 +1,29 @@
+---
+name: "Create release"
+
+concurrency: deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Run semantic-release
+        if: github.repository == 'bdpiprava/scalar-go' && github.event_name == 'push'
+        run: npx semantic-release@v19.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

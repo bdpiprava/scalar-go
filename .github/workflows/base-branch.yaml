@@ -37,31 +37,9 @@ jobs:
       - name: Run unit tests
         run: gotestsum --format testname
 
-  Release:
-    name: Release
-    needs: [ unit-tests, go-lint ]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-
-      - name: Run semantic-release
-        if: github.repository == 'bdpiprava/scalar-go' && github.event_name == 'push'
-        run: npx semantic-release@v19.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   generate-docs:
     name: Generate Docs
-    needs: [ Release ]
+    needs: [ unit-tests, go-lint ]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -79,7 +57,7 @@ jobs:
       - name: Install dependencies
         run: go get .
       - name: Generate Docs
-        run: go run ./main/main.go -generate
+        run: make generate-doc
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
