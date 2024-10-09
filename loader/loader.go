@@ -1,6 +1,7 @@
 package loader
 
 import (
+	"fmt"
 	"maps"
 	"os"
 	"path/filepath"
@@ -11,7 +12,7 @@ import (
 
 // LoadWithName reads the API specification from the provided root directory
 func LoadWithName(rootDir string, apiFileName string) (*model.Spec, error) {
-	content, err := readYamlFile[model.Spec](filepath.Join(rootDir, apiFileName))
+	content, err := readFile[model.Spec](filepath.Join(rootDir, apiFileName))
 	if err != nil {
 		return nil, err
 	}
@@ -58,4 +59,14 @@ func initializeIfNil(obj model.GenericObject) model.GenericObject {
 func exists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+// readFile reads a file and unmarshalls it into the provided data structure.
+func readFile[T any](path string) (data T, err error) {
+	if data, err = readYamlFile[T](path); err == nil {
+		return
+	} else if data, err = readJsonFile[T](path); err == nil {
+		return
+	}
+	return data, fmt.Errorf("file '%s' is not a YAML or JSON file, supported extensions are [yml|yaml|json]", path)
 }
