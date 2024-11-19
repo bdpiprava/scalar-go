@@ -1,0 +1,37 @@
+---
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    open-pull-requests-limit: 3
+    directory: "/"
+    rebase-strategy: "disabled"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:30"
+      timezone: "Europe/Berlin"
+    groups:
+      stable-updates:
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    reviewers:
+      - "bdpiprava"
+
+  - package-ecosystem: "github-actions"
+    open-pull-requests-limit: 1
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:30"
+      timezone: "Europe/Berlin"
+    groups:
+      stable-updates:
+        update-types:
+          - "major"
+          - "minor"
+          - "patch"
+    reviewers:
+      - "bdpiprava"
