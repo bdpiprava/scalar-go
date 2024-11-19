@@ -65,7 +65,7 @@ func exists(path string) bool {
 func readFile[T any](path string) (data T, err error) {
 	if data, err = readYamlFile[T](path); err == nil {
 		return
-	} else if data, err = readJsonFile[T](path); err == nil {
+	} else if data, err = readJSONFile[T](path); err == nil {
 		return
 	}
 	return data, fmt.Errorf("file '%s' is not a YAML or JSON file, supported extensions are [yml|yaml|json]", path)

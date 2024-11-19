@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	scalargo "github.com/bdpiprava/scalar-go"
 	"github.com/bdpiprava/scalar-go/model"
-	"github.com/stretchr/testify/assert"
 )
 
 func Test_ShouldCallOverrideHandler_WhenProvider(t *testing.T) {
@@ -18,17 +19,17 @@ func Test_ShouldCallOverrideHandler_WhenProvider(t *testing.T) {
 		scalargo.WithBaseFileName("pet-store.yml"),
 		scalargo.WithSpecModifier(func(spec *model.Spec) *model.Spec {
 			called = true
-			assert.Equal(t, "Swagger Petstore", spec.Info.Title)
+			require.Equal(t, "Swagger Petstore", spec.Info.Title)
 
 			spec.Info.Title = "PetStore API"
 			return spec
 		}),
 	)
 
-	assert.NoError(t, err)
-	assert.True(t, called)
-	assert.NotNil(t, content)
-	assert.Contains(t, content, "<title>PetStore API</title>")
+	require.NoError(t, err)
+	require.True(t, called)
+	require.NotNil(t, content)
+	require.Contains(t, content, "<title>PetStore API</title>")
 }
 
 func Test_NewV2(t *testing.T) {
@@ -42,23 +43,23 @@ func Test_NewV2(t *testing.T) {
 		{
 			name:      "should return error when no option is provided",
 			inputOpts: []scalargo.Option{},
-			asserter:  func(t *testing.T, got html) { assert.Equal(t, html{}, got) },
+			asserter:  func(t *testing.T, got html) { require.Equal(t, html{}, got) },
 			wantError: "SpecURL or SpecDirectory must be configured",
 		},
 		{
 			name:      "should render html containing script with spec URL when spec URL is configured",
 			inputOpts: []scalargo.Option{scalargo.WithSpecURL(specURL)},
 			asserter: func(t *testing.T, got html) {
-				assert.Len(t, got.spec, 0)
-				assert.Equal(t, "https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml", got.specURL)
+				require.Empty(t, got.spec)
+				require.Equal(t, "https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml", got.specURL)
 			},
 		},
 		{
 			name:      "should render html with inline spec when spec directory is configured",
 			inputOpts: []scalargo.Option{scalargo.WithSpecDir("./data/loader"), scalargo.WithBaseFileName("pet-store.yml")},
 			asserter: func(t *testing.T, got html) {
-				assert.Len(t, got.specURL, 0)
-				assert.True(t, strings.HasPrefix(got.spec, `{"openapi":"3.0.0","info":{"title":"Swagger Petstore",`))
+				require.Empty(t, got.specURL)
+				require.True(t, strings.HasPrefix(got.spec, `{"openapi":"3.0.0","info":{"title":"Swagger Petstore",`))
 			},
 		},
 		{
@@ -71,7 +72,7 @@ func Test_NewV2(t *testing.T) {
 				scalargo.WithMetaDataOpts(scalargo.WithKeyValue("foo", "bar")),
 			},
 			asserter: func(t *testing.T, got html) {
-				assert.Equal(t, map[string]any{
+				require.Equal(t, map[string]any{
 					"hiddenClients": true,
 					"layout":        string(scalargo.LayoutClassic),
 					"theme":         string(scalargo.ThemeKepler),
@@ -92,9 +93,9 @@ func Test_NewV2(t *testing.T) {
 
 			tc.asserter(t, content)
 			if tc.wantError != "" {
-				assert.ErrorContains(t, gotErr, tc.wantError)
+				require.ErrorContains(t, gotErr, tc.wantError)
 			} else {
-				assert.NoError(t, gotErr)
+				require.NoError(t, gotErr)
 			}
 		})
 	}

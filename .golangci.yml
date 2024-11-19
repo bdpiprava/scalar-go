@@ -1,0 +1,44 @@
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    - copyloopvar
+    - dogsled
+    - dupl
+    - errcheck
+    - errorlint
+    - gocheckcompilerdirectives
+    - goconst
+    - gocritic
+    - gocyclo
+    - godox
+    - gofmt
+    - goimports
+    - mnd
+    - goprintffuncname
+    - gosec
+    - intrange
+    - ineffassign
+    - lll
+    - misspell
+    - nakedret
+    - noctx
+    - nolintlint
+    - revive
+    - stylecheck
+    - testifylint
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
+run:
+  timeout: 10m
+output:
+  print-linter-name: true
+  show-stats: true
+  formats:
+    - format: colored-line-number
+
+linters-settings:
+  lll:
+    line-length: 140

@@ -81,7 +81,11 @@ func (o *Options) GetSpecScript() (string, error) {
 	configJSON := strings.ReplaceAll(string(configAsBytes), `"`, `&quot;`)
 
 	if strings.TrimSpace(o.SpecURL) != "" {
-		return fmt.Sprintf(`<script id="api-reference" data-url="%s" data-configuration="%s"></script>`, o.SpecURL, configJSON), nil
+		return fmt.Sprintf(
+			`<script id="api-reference" data-url="%s" data-configuration="%s"></script>`,
+			o.SpecURL,
+			configJSON,
+		), nil
 	}
 
 	if strings.TrimSpace(o.SpecDirectory) == "" {
@@ -107,5 +111,9 @@ func (o *Options) GetSpecScript() (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(`<script id="api-reference" type="application/json" data-configuration="%s">%s</script>`, configJSON, string(content)), nil
+	return fmt.Sprintf(
+		`<script id="api-reference" type="application/json" data-configuration="%s">%s</script>`,
+		configJSON,
+		string(content),
+	), nil
 }

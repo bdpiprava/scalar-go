@@ -13,15 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Run lint
+        uses: golangci/golangci-lint-action@v6
         with:
-          go-version: '1.22'
-
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
-        with:
-          version: v1.56.2
+          go-version-file: go.mod
+          
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest

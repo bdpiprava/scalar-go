@@ -7,8 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bdpiprava/scalar-go/model"
 	"gopkg.in/yaml.v3"
+
+	"github.com/bdpiprava/scalar-go/model"
 )
 
 // readYamlFile reads a YAML file and unmarshalls it into the provided data structure.

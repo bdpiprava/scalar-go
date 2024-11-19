@@ -12,9 +12,13 @@ import (
 	"os"
 	"reflect"
 	"runtime"
+	"time"
 
 	scalargo "github.com/bdpiprava/scalar-go"
 )
+
+// serverTimeout is the timeout for the server
+const serverTimeout = 3 * time.Second
 
 type Example struct {
 	Name        string `json:"name"`
@@ -44,7 +48,8 @@ func exampleForSpecURLAndMetadataUsage() (string, error) {
 	)
 }
 
-// exampleForServersOverride is an example of how to use the scalargo package to load the spec from a URL and add metadata
+// exampleForServersOverride is an example of how to use the scalargo package
+// to load the spec from a URL and add metadata
 func exampleForServersOverride() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecURL("https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml"),
@@ -72,7 +77,7 @@ func exampleForOtherConfigs() (string, error) {
 type ExampleFn func() (string, error)
 
 func handler(fn ExampleFn) http.HandlerFunc {
-	return func(w http.ResponseWriter, request *http.Request) {
+	return func(w http.ResponseWriter, _ *http.Request) {
 		content, err := fn()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -104,7 +109,12 @@ func main() {
 	})
 
 	println("Starting server at http://localhost:8090")
-	_ = http.ListenAndServe(":8090", nil)
+	server := &http.Server{
+		Addr:              ":8090",
+		ReadHeaderTimeout: serverTimeout,
+	}
+
+	_ = server.ListenAndServe()
 }
 
 func buildStatic() {
