@@ -63,6 +63,25 @@ func Test_NewV2(t *testing.T) {
 			},
 		},
 		{
+			name: "should render html with authentication configuration",
+			inputOpts: []scalargo.Option{
+				scalargo.WithSpecURL(specURL),
+				scalargo.WithAuthenticationOpts(
+					scalargo.WithCustomSecurity(),
+					scalargo.WithPreferredSecurityScheme("bearerAuth"),
+					scalargo.WithHTTPBearerToken("this-is-a-token"),
+				),
+			},
+			asserter: func(t *testing.T, got html) {
+				require.Equal(t, map[string]any{
+					"layout":         string(scalargo.LayoutModern),
+					"theme":          string(scalargo.ThemeDefault),
+					"metadata":       map[string]any{"title": "API Reference"},
+					"authentication": `{"customSecurity":true,"http":{"bearer":{"token":"this-is-a-token"}},"preferredSecurityScheme":["bearerAuth"]}`,
+				}, got.configuration)
+			},
+		},
+		{
 			name: "should render html with custom configuration",
 			inputOpts: []scalargo.Option{
 				scalargo.WithSpecURL(specURL),

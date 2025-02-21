@@ -1,6 +1,7 @@
 package scalargo
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -195,5 +196,20 @@ func WithSpecDir(specDir string) func(*Options) {
 func WithSpecURL(specURL string) func(*Options) {
 	return func(o *Options) {
 		o.SpecURL = specURL
+	}
+}
+
+// WithAuthenticationOpts sets the authentication method for the Scalar UI
+func WithAuthenticationOpts(opts ...AuthOption) func(*Options) {
+	auth := make(AuthenticationOption)
+	for _, opt := range opts {
+		opt(auth)
+	}
+
+	return func(o *Options) {
+		content, err := json.Marshal(auth)
+		if err == nil {
+			o.Configurations[keyAuthentication] = string(content)
+		}
 	}
 }
