@@ -43,6 +43,7 @@ type Options struct {
 	SpecModifier   SpecModifier
 	SpecDirectory  string
 	SpecURL        string
+	SpecBytes      []byte
 }
 
 type Option func(*Options)
@@ -196,6 +197,13 @@ func WithSpecDir(specDir string) func(*Options) {
 func WithSpecURL(specURL string) func(*Options) {
 	return func(o *Options) {
 		o.SpecURL = specURL
+	}
+}
+
+// WithSpecBytes loads the spec from the provided bytes in either YAML or JSON format
+func WithSpecBytes(specBytes []byte) func(*Options) {
+	return func(o *Options) {
+		o.SpecBytes = specBytes
 	}
 }
 

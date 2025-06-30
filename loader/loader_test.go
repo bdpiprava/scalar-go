@@ -1,6 +1,7 @@
 package loader_test
 
 import (
+	"os"
 	"reflect"
 	"sort"
 	"testing"
@@ -12,7 +13,7 @@ import (
 )
 
 func Test_Load(t *testing.T) {
-	spec, err := loader.LoadWithName("../data/loader", "pet-store.yml")
+	spec, err := loader.LoadFromDir("../data/loader", "pet-store.yml")
 
 	require.NoError(t, err)
 	require.NotNil(t, spec)
@@ -22,21 +23,21 @@ func Test_Load(t *testing.T) {
 }
 
 func Test_Load_JsonFile(t *testing.T) {
-	spec, err := loader.LoadWithName("../data/loader", "pet-store.json")
+	spec, err := loader.LoadFromDir("../data/loader", "pet-store.json")
 
 	require.NoError(t, err)
 	require.NotNil(t, spec)
 }
 
 func Test_Load_InvalidFileType(t *testing.T) {
-	spec, err := loader.LoadWithName("../data/loader", "pet-store.xyz")
+	spec, err := loader.LoadFromDir("../data/loader", "pet-store.xyz")
 
 	require.ErrorContains(t, err, `file '../data/loader/pet-store.xyz' is not a YAML or JSON file, supported extensions are [yml|yaml|json]`)
 	require.Nil(t, spec)
 }
 
 func Test_Load_MultipleFiles(t *testing.T) {
-	spec, err := loader.LoadWithName("../data/loader-multiple-files", "api.yml")
+	spec, err := loader.LoadFromDir("../data/loader-multiple-files", "api.yml")
 
 	require.NoError(t, err)
 	require.NotNil(t, spec)
@@ -46,17 +47,17 @@ func Test_Load_MultipleFiles(t *testing.T) {
 }
 
 func Test_LoadedFileShouldHaveIdenticalContent(t *testing.T) {
-	specFromMultipleFiles, err := loader.LoadWithName("../data/loader-multiple-files", "api.yml")
+	specFromMultipleFiles, err := loader.LoadFromDir("../data/loader-multiple-files", "api.yml")
 	require.NoError(t, err)
 
-	specFromSingleFile, err := loader.LoadWithName("../data/loader", "pet-store.yml")
+	specFromSingleFile, err := loader.LoadFromDir("../data/loader", "pet-store.yml")
 	require.NoError(t, err)
 
 	require.True(t, reflect.DeepEqual(specFromMultipleFiles, specFromSingleFile))
 }
 
 func Test_Load_DocumentedPath(t *testing.T) {
-	spec, err := loader.LoadWithName("../data/loader", "pet-store.yml")
+	spec, err := loader.LoadFromDir("../data/loader", "pet-store.yml")
 	require.NoError(t, err)
 
 	paths := spec.DocumentedPaths()
@@ -72,7 +73,7 @@ func Test_Load_DocumentedPath(t *testing.T) {
 }
 
 func Test_Load_XTagGroups(t *testing.T) {
-	spec, err := loader.LoadWithName("../data/xTagGroups", "withXTagGroups.yaml")
+	spec, err := loader.LoadFromDir("../data/xTagGroups", "withXTagGroups.yaml")
 	require.NoError(t, err)
 
 	require.Len(t, spec.TagsGroup, 2)
@@ -87,6 +88,40 @@ func Test_Load_XTagGroups(t *testing.T) {
 		Description: "These are the GroupTwo APIs",
 		Tags:        []string{"SubGroup2.1"},
 	}, spec.TagsGroup[1])
+}
+
+func Test_LoadFromBytes(t *testing.T) {
+	testCases := []struct {
+		name     string
+		filePath string
+	}{
+		{
+			name:     "YAML",
+			filePath: "../data/loader/pet-store.yml",
+		},
+		{
+			name:     "JSON",
+			filePath: "../data/loader/pet-store.json",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			content, err := os.ReadFile(tc.filePath)
+			require.NoError(t, err)
+
+			spec, err := loader.LoadFromBytes(content)
+			require.NoError(t, err)
+			require.NotNil(t, spec)
+
+			// test JSON file does not have expected schema
+			if tc.name != "JSON" {
+				requireBase(t, spec)
+				requireSchema(t, spec)
+				requirePaths(t, spec)
+			}
+		})
+	}
 }
 
 func getPathParam(params []interface{}, name string) model.GenericObject {

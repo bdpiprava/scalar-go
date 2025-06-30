@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bdpiprava/scalar-go/loader"
+	"github.com/bdpiprava/scalar-go/model"
 )
 
 // defaultTitle when title is not specified this default is used
@@ -72,8 +73,12 @@ func renderHTML(title, ccsOverride, specScript, cdn string) string {
   `, title, ccsOverride, specScript, cdn)
 }
 
-// GetSpecScript prepare and return spec script
+// GetSpecScript prepares and returns the spec script, prioritizing SpecURL, then SpecDirectory, then SpecBytes
 func (o *Options) GetSpecScript() (string, error) {
+	if o.SpecURL == "" && o.SpecDirectory == "" && o.SpecBytes == nil {
+		return "", fmt.Errorf("one of SpecURL, SpecDirectory or SpecBytes must be configured")
+	}
+
 	configAsBytes, err := json.Marshal(o.Configurations)
 	if err != nil {
 		return "", err
@@ -88,13 +93,17 @@ func (o *Options) GetSpecScript() (string, error) {
 		), nil
 	}
 
-	if strings.TrimSpace(o.SpecDirectory) == "" {
-		return "", fmt.Errorf(`SpecURL or SpecDirectory must be configured`)
-	}
-
-	spec, err := loader.LoadWithName(o.SpecDirectory, o.BaseFileName)
-	if err != nil {
-		return "", err
+	var spec *model.Spec
+	if o.SpecDirectory != "" {
+		spec, err = loader.LoadFromDir(o.SpecDirectory, o.BaseFileName)
+		if err != nil {
+			return "", err
+		}
+	} else if o.SpecBytes != nil {
+		spec, err = loader.LoadFromBytes(o.SpecBytes)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	if o.SpecModifier != nil {
