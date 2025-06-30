@@ -44,7 +44,7 @@ func Test_NewV2(t *testing.T) {
 			name:      "should return error when no option is provided",
 			inputOpts: []scalargo.Option{},
 			asserter:  func(t *testing.T, got html) { require.Equal(t, html{}, got) },
-			wantError: "SpecURL or SpecDirectory must be configured",
+			wantError: "one of SpecURL, SpecDirectory or SpecBytes must be configured",
 		},
 		{
 			name:      "should render html containing script with spec URL when spec URL is configured",
