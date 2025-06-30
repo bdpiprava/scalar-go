@@ -63,6 +63,14 @@ func Test_NewV2(t *testing.T) {
 			},
 		},
 		{
+			name:      "should render html with inline spec when spec bytes is configured",
+			inputOpts: []scalargo.Option{scalargo.WithSpecBytes([]byte(`{"openapi":"3.0.0","info":{"title":"Swagger Petstore"}}`))},
+			asserter: func(t *testing.T, got html) {
+				require.Empty(t, got.specURL)
+				require.True(t, strings.HasPrefix(got.spec, `{"openapi":"3.0.0","info":{"title":"Swagger Petstore","version":""},"paths":{}`))
+			},
+		},
+		{
 			name: "should render html with authentication configuration",
 			inputOpts: []scalargo.Option{
 				scalargo.WithSpecURL(specURL),
