@@ -75,10 +75,6 @@ func renderHTML(title, ccsOverride, specScript, cdn string) string {
 
 // GetSpecScript prepares and returns the spec script, prioritizing SpecURL, then SpecDirectory, then SpecBytes
 func (o *Options) GetSpecScript() (string, error) {
-	if o.SpecURL == "" && o.SpecDirectory == "" && o.SpecBytes == nil {
-		return "", fmt.Errorf("one of SpecURL, SpecDirectory or SpecBytes must be configured")
-	}
-
 	configAsBytes, err := json.Marshal(o.Configurations)
 	if err != nil {
 		return "", err
@@ -104,6 +100,8 @@ func (o *Options) GetSpecScript() (string, error) {
 		if err != nil {
 			return "", err
 		}
+	} else {
+		return "", fmt.Errorf("one of SpecURL, SpecDirectory or SpecBytes must be configured")
 	}
 
 	if o.SpecModifier != nil {

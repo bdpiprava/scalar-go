@@ -46,6 +46,16 @@ func LoadFromDir(rootDir string, apiFileName string) (*model.Spec, error) {
 	return sanitizer.Sanitize(specContent), nil
 }
 
+// Load reads the API specification from the provided root directory
+func Load(rootDir string) (*model.Spec, error) {
+	return LoadFromDirRoot(rootDir)
+}
+
+// LoadWithName reads the API specification from the provided root directory
+func LoadWithName(rootDir, apiFileName string) (*model.Spec, error) {
+	return LoadFromDir(rootDir, apiFileName)
+}
+
 // LoadFromDirRoot reads the API specification from the provided root directory
 func LoadFromDirRoot(rootDir string) (*model.Spec, error) {
 	return LoadFromDir(rootDir, "api.yaml")

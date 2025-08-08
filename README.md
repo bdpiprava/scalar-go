@@ -7,7 +7,21 @@ different types of specification content.
 
 ## Features 🚀
 
-Supports reading API specification from a directory with multiple files, a single file.
+Supports reading API specification from multiple sources with the following precedence order:
+1. **URL** (highest priority) - Loads spec from a remote URL
+2. **Directory** - Loads from a directory with multiple files or single file
+3. **Bytes** (lowest priority) - Loads from in-memory bytes (YAML or JSON)
+
+> **⚠️ Deprecation Notice**: The `Load` and `LoadWithName` functions in the `loader` package are deprecated. Use `NewV2` with the appropriate `With*` options instead.
+
+### Reading from URL
+
+```go
+// Load spec from a remote URL
+content, err := scalargo.NewV2(
+    scalargo.WithSpecURL("https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml"),
+)
+```
 
 ### Reading from single file
 
@@ -17,9 +31,14 @@ See [Documentation](https://bdpiprava.github.io/scalar-go) for more details.
 // When file is located in directory /example/docs/ and filename is api.yaml(default lookup name)
 content, err := scalargo.New("/example/docs/")
 
+// Using NewV2 (recommended approach)
+content, err := scalargo.NewV2(
+    scalargo.WithSpecDir("/example/docs/"),
+)
+
 // When file is located in directory /example/docs/ and filename is different from default lookup name e.g. petstore.yaml
-content, err := scalargo.New(
-    "/example/docs/",
+content, err := scalargo.NewV2(
+    scalargo.WithSpecDir("/example/docs/"),
     scalargo.WithBaseFileName("petstore.yaml"),
 )
 ```
@@ -48,7 +67,39 @@ Expected directory structure:
 
 ```go
 // When segmented files are located in directory /example/docs/ following the expected directory structure
-content, err := scalargo.New("/example/docs/")
+content, err := scalargo.NewV2(
+    scalargo.WithSpecDir("/example/docs/"),
+)
+```
+
+### Reading from bytes (self-contained builds)
+
+`WithSpecBytes` enables **self-contained builds** by embedding the API specification directly in your binary. This is particularly useful for:
+- Deploying applications without external file dependencies
+- Creating portable executables
+- Ensuring the API spec is always available
+
+```go
+//go:embed api.yaml
+var specBytes []byte
+
+// Load spec from embedded bytes (YAML or JSON format supported)
+content, err := scalargo.NewV2(
+    scalargo.WithSpecBytes(specBytes),
+)
+
+// You can also load from any byte slice
+yamlSpec := []byte(`
+openapi: 3.0.0
+info:
+  title: My API
+  version: 1.0.0
+paths: {}
+`)
+
+content, err := scalargo.NewV2(
+    scalargo.WithSpecBytes(yamlSpec),
+)
 ```
 
 ## Customization Options ⚙️
@@ -76,6 +127,8 @@ and customer options for easy of documenting APIs:
 
 ## Usage 📚
 
+### Basic Example
+
 ```go
 package main
 
@@ -87,10 +140,10 @@ import (
 )
 
 func main() {
-    apiDir := "path/to/api/directory"
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        content, err := scalargo.New(
-            apiDir,
+        // Using NewV2 (recommended approach)
+        content, err := scalargo.NewV2(
+            scalargo.WithSpecDir("path/to/api/directory"),
             scalargo.WithBaseFileName("api.yml"),
             scalargo.WithSpecModifier(func(spec *model.Spec) *model.Spec { 
               // Customise the spec here
@@ -107,6 +160,55 @@ func main() {
     })
     http.ListenAndServe(":8090", nil)
 }
+```
+
+### Self-Contained Build Example
+
+```go
+package main
+
+import (
+    _ "embed"
+    "net/http"
+
+    scalargo "github.com/bdpiprava/scalar-go"
+)
+
+//go:embed api.yaml
+var apiSpec []byte
+
+func main() {
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        // Self-contained build using embedded bytes
+        content, err := scalargo.NewV2(
+            scalargo.WithSpecBytes(apiSpec),
+        )
+
+        if err != nil {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+            return
+        }
+        w.Write([]byte(content))
+    })
+    http.ListenAndServe(":8090", nil)
+}
+```
+
+### Precedence Order
+
+When multiple spec sources are provided, ScalarGo follows this precedence order:
+
+1. **`WithSpecURL`** (highest priority) - Remote URL takes precedence
+2. **`WithSpecDir`** - Directory-based specs are used if no URL is provided  
+3. **`WithSpecBytes`** (lowest priority) - Byte-based specs are used as fallback
+
+```go
+// This will use the URL, ignoring the directory and bytes
+content, err := scalargo.NewV2(
+    scalargo.WithSpecURL("https://example.com/api.yaml"),  // <- This wins
+    scalargo.WithSpecDir("/path/to/api/"),                 // <- Ignored
+    scalargo.WithSpecBytes(embeddedBytes),                 // <- Ignored
+)
 ```
 
 See the [examples](./main/main.go) for more details.
