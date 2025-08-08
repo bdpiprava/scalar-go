@@ -1,6 +1,7 @@
 package loader
 
 import (
+	"encoding/json"
 	"fmt"
 	"maps"
 	"os"
@@ -8,10 +9,11 @@ import (
 
 	"github.com/bdpiprava/scalar-go/model"
 	"github.com/bdpiprava/scalar-go/sanitizer"
+	"gopkg.in/yaml.v3"
 )
 
-// LoadWithName reads the API specification from the provided root directory
-func LoadWithName(rootDir string, apiFileName string) (*model.Spec, error) {
+// LoadFromDir reads the API specification from the provided root directory
+func LoadFromDir(rootDir string, apiFileName string) (*model.Spec, error) {
 	content, err := readFile[model.Spec](filepath.Join(rootDir, apiFileName))
 	if err != nil {
 		return nil, err
@@ -46,7 +48,36 @@ func LoadWithName(rootDir string, apiFileName string) (*model.Spec, error) {
 
 // Load reads the API specification from the provided root directory
 func Load(rootDir string) (*model.Spec, error) {
-	return LoadWithName(rootDir, "api.yaml")
+	return LoadFromDirRoot(rootDir)
+}
+
+// LoadWithName reads the API specification from the provided root directory
+func LoadWithName(rootDir, apiFileName string) (*model.Spec, error) {
+	return LoadFromDir(rootDir, apiFileName)
+}
+
+// LoadFromDirRoot reads the API specification from the provided root directory
+func LoadFromDirRoot(rootDir string) (*model.Spec, error) {
+	return LoadFromDir(rootDir, "api.yaml")
+}
+
+// LoadFromBytes reads the API specification from the provided bytes in either YAML or JSON format
+func LoadFromBytes(bytes []byte) (*model.Spec, error) {
+	specContent := &model.Spec{}
+
+	// Try YAML first
+	err := yaml.Unmarshal(bytes, specContent)
+	if err == nil {
+		return sanitizer.Sanitize(specContent), nil
+	}
+
+	// Try JSON if YAML fails
+	err = json.Unmarshal(bytes, specContent)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse as YAML or JSON: %w", err)
+	}
+
+	return sanitizer.Sanitize(specContent), nil
 }
 
 func initializeIfNil(obj model.GenericObject) model.GenericObject {

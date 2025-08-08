@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -15,6 +16,7 @@ import (
 	"time"
 
 	scalargo "github.com/bdpiprava/scalar-go"
+	"github.com/bdpiprava/scalar-go/data"
 )
 
 // serverTimeout is the timeout for the server
@@ -74,6 +76,17 @@ func exampleForOtherConfigs() (string, error) {
 	)
 }
 
+// exampleForSpecBytes demonstrates self-contained builds using WithSpecBytes
+func exampleForSpecBytes() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecBytes(data.PetStoreSpec),
+		scalargo.WithMetaDataOpts(
+			scalargo.WithTitle("Pet Store API (Embedded)"),
+			scalargo.WithKeyValue("Description", "Self-contained build with embedded spec"),
+		),
+	)
+}
+
 type ExampleFn func() (string, error)
 
 func handler(fn ExampleFn) http.HandlerFunc {
@@ -101,6 +114,7 @@ func main() {
 
 	http.HandleFunc("/spec-dir", handler(exampleForSpecDir))
 	http.HandleFunc("/spec-url", handler(exampleForSpecURLAndMetadataUsage))
+	http.HandleFunc("/spec-bytes", handler(exampleForSpecBytes))
 	http.HandleFunc("/servers-override", handler(exampleForServersOverride))
 	http.HandleFunc("/other-configs", handler(exampleForOtherConfigs))
 	http.HandleFunc("/", func(w http.ResponseWriter, request *http.Request) {
@@ -159,6 +173,12 @@ func getExamples() []Example {
 			Description: "This example shows how to read the spec from a URL and add other configurations",
 			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForOtherConfigs)),
 			Output:      ignoreError(exampleForOtherConfigs),
+		},
+		{
+			Name:        "Self-Contained Build with WithSpecBytes",
+			Description: "This example demonstrates how to use WithSpecBytes for self-contained builds with embedded specs",
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForSpecBytes)),
+			Output:      ignoreError(exampleForSpecBytes),
 		},
 	}
 }
