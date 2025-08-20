@@ -5,7 +5,7 @@ tests:
 
 # To generate static files
 generate-doc:
-	@mkdir -p ./main/static
-	go run ./main/main.go -generate
+	@mkdir -p ./docs/static
+	go run ./docs/main.go -generate
 
 .PHONY: tests generate-static
