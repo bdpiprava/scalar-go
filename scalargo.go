@@ -90,17 +90,18 @@ func (o *Options) GetSpecScript() (string, error) {
 	}
 
 	var spec *model.Spec
-	if o.SpecDirectory != "" {
+	switch {
+	case o.SpecDirectory != "":
 		spec, err = loader.LoadFromDir(o.SpecDirectory, o.BaseFileName)
 		if err != nil {
 			return "", err
 		}
-	} else if o.SpecBytes != nil {
+	case o.SpecBytes != nil:
 		spec, err = loader.LoadFromBytes(o.SpecBytes)
 		if err != nil {
 			return "", err
 		}
-	} else {
+	default:
 		return "", fmt.Errorf("one of SpecURL, SpecDirectory or SpecBytes must be configured")
 	}
 
