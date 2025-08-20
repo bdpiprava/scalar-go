@@ -57,9 +57,13 @@ func ExampleDynamicInfo() (string, error) {
 			originalTitle := spec.Info.Title
 			spec.Info.Title = fmt.Sprintf("%s (Generated at Runtime)", originalTitle)
 
+			var description string
+			if spec.Info.Description != nil {
+				description = *spec.Info.Description
+			}
 			spec.Info.Description = toPrt(fmt.Sprintf(
 				"%s\n\n**Note:** This documentation was generated dynamically and includes runtime modifications.",
-				*spec.Info.Description,
+				description,
 			))
 
 			spec.Tags = append(spec.Tags, model.Tag{
