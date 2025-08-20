@@ -552,15 +552,49 @@
 
     // Render example content
     function renderExample(example, idx) {
-        const blob = new Blob([example.output], {type: "text/html; charset=utf-8"});
-        const previewFrame = document.getElementById('previewFrame');
-        previewFrame.src = URL.createObjectURL(blob);
+        // Inject localStorage polyfill before Scalar scripts
+        const modifiedHTML = example.output.replace(
+            '<head>',
+            `<head>
+                <script>
+                    // Polyfill localStorage for iframe blob URLs
+                    (function() {
+                        if (typeof Storage === "undefined") return;
+                        
+                        try {
+                            localStorage.getItem('test');
+                        } catch (e) {
+                            // Create fallback localStorage
+                            const storage = {
+                                _data: {},
+                                setItem: function(key, value) { this._data[key] = String(value); },
+                                getItem: function(key) { return this._data[key] || null; },
+                                removeItem: function(key) { delete this._data[key]; },
+                                clear: function() { this._data = {}; },
+                                get length() { return Object.keys(this._data).length; },
+                                key: function(index) { return Object.keys(this._data)[index] || null; }
+                            };
+                            
+                            // Override both localStorage and sessionStorage
+                            Object.defineProperty(window, 'localStorage', {
+                                value: storage,
+                                writable: false,
+                                configurable: false
+                            });
+                            Object.defineProperty(window, 'sessionStorage', {
+                                value: storage,
+                                writable: false,
+                                configurable: false
+                            });
+                        }
+                    })();
+                </script>`
+        );
         
-        const codeElement = document.querySelector('.code-pre code');
-        codeElement.innerHTML = hljs.highlight(example.code, {language: 'go'}).value;
-        
-        const descriptionElement = document.querySelector('.code-header .description');
-        descriptionElement.textContent = example.description;
+        const blob = new Blob([modifiedHTML], {type: "text/html; charset=utf-8"});
+        document.getElementById('previewFrame').src = URL.createObjectURL(blob);
+        document.querySelector('.code-pre code').innerHTML = hljs.highlight(example.code, {language: 'go'}).value;
+        document.querySelector('.code-header .description').textContent = example.description;
         
         // Update sidebar active states
         document.querySelectorAll('.sidebar-nav .nav-link').forEach(el => {
@@ -619,23 +653,11 @@
     // Initialize the application
     function init() {
         try {
-            // Initialize mobile menu
             initMobileMenu();
-            
-            // Initialize tabs
             initTabs();
 
-            // Add examples to sidebar
-            if (examples && examples.length > 0) {
-                examples.forEach((example, idx) => {
-                    addExampleToSidebar(example, idx);
-                });
-                
-                // Render first example
-                renderExample(examples[0], 0);
-            } else {
-                const sidebar = document.querySelector('.sidebar-nav');
-                sidebar.innerHTML = `
+            if (!examples || examples.length === 0) {
+                document.querySelector('.sidebar-nav').innerHTML = `
                     <li class="nav-item">
                         <div class="nav-link" style="color: var(--text-muted); cursor: default;">
                             <i class="fas fa-info-circle"></i>
@@ -644,6 +666,11 @@
                     </li>
                 `;
             }
+
+            examples.forEach((example, idx) => {
+                addExampleToSidebar(example, idx);
+            });
+            renderExample(examples[0], 0);
 
             // Remove welcome link after examples are loaded
             setTimeout(() => {
@@ -658,15 +685,10 @@
         }
     }
 
-    // Start the application when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
+    (function(){
+        window.copyCode = copyCode;
         init();
-    }
-
-    // Global function for copy button (referenced in HTML)
-    window.copyCode = copyCode;
+    })();
 </script>
 </body>
 </html>

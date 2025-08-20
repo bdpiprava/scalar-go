@@ -5,8 +5,6 @@ import (
 )
 
 // ExampleThemeDefault demonstrates the default theme
-// @example Default Theme
-// @description This example shows the default theme with clean, modern styling for professional API documentation.
 func ExampleThemeDefault() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -16,8 +14,6 @@ func ExampleThemeDefault() (string, error) {
 }
 
 // ExampleThemeMoon demonstrates the moon theme
-// @example Moon Theme
-// @description This example shows the moon theme with dark styling and blue accents, perfect for modern dark-mode preferences.
 func ExampleThemeMoon() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -27,8 +23,6 @@ func ExampleThemeMoon() (string, error) {
 }
 
 // ExampleThemePurple demonstrates the purple theme
-// @example Purple Theme
-// @description This example shows the purple theme with vibrant purple color scheme for distinctive and creative API documentation.
 func ExampleThemePurple() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -38,8 +32,6 @@ func ExampleThemePurple() (string, error) {
 }
 
 // ExampleThemeSolarized demonstrates the solarized theme
-// @example Solarized Theme
-// @description This example shows the solarized theme based on the popular Solarized color scheme, offering excellent readability and reduced eye strain.
 func ExampleThemeSolarized() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -51,8 +43,6 @@ func ExampleThemeSolarized() (string, error) {
 // Layout examples - self-contained spec functions
 
 // ExampleLayoutModern demonstrates the modern layout
-// @example Modern Layout
-// @description This example shows the modern layout with contemporary design elements and enhanced user experience for API documentation.
 func ExampleLayoutModern() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -62,8 +52,6 @@ func ExampleLayoutModern() (string, error) {
 }
 
 // ExampleLayoutClassic demonstrates the classic layout
-// @example Classic Layout
-// @description This example shows the classic layout with traditional documentation design, familiar to users of conventional API documentation tools.
 func ExampleLayoutClassic() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -75,8 +63,6 @@ func ExampleLayoutClassic() (string, error) {
 // Visibility examples - self-contained spec functions
 
 // ExampleHideSidebar demonstrates hiding the sidebar for a cleaner look
-// @example Hide Sidebar
-// @description This example shows how to hide the sidebar to create a cleaner, more focused documentation layout with more space for content.
 func ExampleHideSidebar() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -86,8 +72,6 @@ func ExampleHideSidebar() (string, error) {
 }
 
 // ExampleHideModels demonstrates hiding the models section to focus on endpoints
-// @example Hide Models
-// @description This example shows how to hide the models section to focus purely on API endpoints, useful for endpoint-centric documentation.
 func ExampleHideModels() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -97,8 +81,6 @@ func ExampleHideModels() (string, error) {
 }
 
 // ExampleDarkMode demonstrates enabling dark mode by default
-// @example Dark Mode
-// @description This example shows how to enable dark mode by default, providing a modern dark interface that's easier on the eyes.
 func ExampleDarkMode() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -110,8 +92,6 @@ func ExampleDarkMode() (string, error) {
 // Advanced examples - self-contained spec functions
 
 // ExampleCustomCSS demonstrates custom CSS styling for branded documentation
-// @example Custom CSS
-// @description This example shows how to apply custom CSS overrides to create branded documentation with custom colors, fonts, and styling elements.
 func ExampleCustomCSS() (string, error) {
 	customCSS := `
 		/* Custom styling for the API documentation */
@@ -140,8 +120,6 @@ func ExampleCustomCSS() (string, error) {
 }
 
 // ExampleAllOptions demonstrates combining multiple customization options
-// @example All Options Combined
-// @description This example shows how to combine multiple customization options including theme, layout, UI controls, custom CSS, and client hiding for comprehensive documentation branding.
 func ExampleAllOptions() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),

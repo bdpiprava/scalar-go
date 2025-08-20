@@ -38,7 +38,7 @@ linters:
     - whitespace
   settings:
     lll:
-      line-length: 140
+      line-length: 180
   exclusions:
     generated: lax
     presets:

@@ -4,9 +4,9 @@ import (
 	scalargo "github.com/bdpiprava/scalar-go"
 )
 
+const githubAPI = "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json"
+
 // ExampleScalarGalaxy demonstrates loading the Scalar Galaxy API specification from CDN
-// @example Scalar Galaxy API
-// @description This example shows how to load the Scalar Galaxy API specification directly from a CDN URL.
 func ExampleScalarGalaxy() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecURL("https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml"),
@@ -14,8 +14,6 @@ func ExampleScalarGalaxy() (string, error) {
 }
 
 // ExamplePetstore demonstrates loading the classic Petstore API specification
-// @example Petstore API
-// @description This example shows how to load the classic Petstore OpenAPI specification from the official repository.
 func ExamplePetstore() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecURL("https://petstore3.swagger.io/api/v3/openapi.json"),
@@ -23,11 +21,9 @@ func ExamplePetstore() (string, error) {
 }
 
 // ExampleGitHubAPI demonstrates loading GitHub API documentation from public OpenAPI spec
-// @example GitHub API
-// @description This example shows how to load and display the complete GitHub REST API documentation using their public OpenAPI specification.
 func ExampleGitHubAPI() (string, error) {
 	return scalargo.NewV2(
-		scalargo.WithSpecURL("https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json"),
+		scalargo.WithSpecURL(githubAPI),
 		scalargo.WithMetaDataOpts(
 			scalargo.WithTitle("GitHub REST API"),
 			scalargo.WithKeyValue("description", "Complete GitHub REST API documentation"),
@@ -37,8 +33,6 @@ func ExampleGitHubAPI() (string, error) {
 }
 
 // ExampleOpenAIAPI demonstrates loading external API documentation with custom metadata
-// @example OpenAI API Demo
-// @description This example shows how to load external API documentation with custom titles, descriptions, and alternative theming (using Scalar Galaxy as demo).
 func ExampleOpenAIAPI() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecURL("https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml"),
@@ -53,8 +47,6 @@ func ExampleOpenAIAPI() (string, error) {
 }
 
 // ExampleCustomizedExternal demonstrates URL loading with extensive branding customization
-// @example Customized External API
-// @description This example shows how to load external specifications with comprehensive customization including custom CSS, theming, and UI options for branded documentation.
 func ExampleCustomizedExternal() (string, error) {
 	customCSS := `
 		/* Custom branding for external API docs */

@@ -5,11 +5,9 @@ import (
 )
 
 const specDir = "./data/loader"
-const specFileName = "api.yaml"
+const specFileName = "pet-store.yml"
 
 // ExampleBasicUsage demonstrates the most basic usage of scalar-go
-// @example Basic Usage
-// @description This example shows how to generate HTML documentation from a single OpenAPI specification file.
 func ExampleBasicUsage() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),

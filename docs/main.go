@@ -124,7 +124,7 @@ func buildStatic() {
 		panic(err)
 	}
 
-	f, err := os.Create("./docs/static/index.html")
+	f, err := os.Create("./build/docs/index.html")
 	if err != nil {
 		panic(err)
 	}
@@ -141,217 +141,11 @@ func buildStatic() {
 	}
 }
 
-func getExamples() []*Example {
-	return []*Example{
-		{
-			Name:        "Reading Spec from Directory",
-			Description: "This example shows how to read the spec from multiple files in a directory",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForSpecDir)),
-			Output:      ignoreError(exampleForSpecDir),
-		},
-		{
-			Name:        "Reading Spec from URL and Metadata Usage",
-			Description: "This example shows how to read the spec from a URL and add metadata",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForSpecURLAndMetadataUsage)),
-			Output:      ignoreError(exampleForSpecURLAndMetadataUsage),
-		},
-		{
-			Name:        "Servers Override",
-			Description: "This example shows how to read the spec from a URL and override the servers",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForServersOverride)),
-			Output:      ignoreError(exampleForServersOverride),
-		},
-		{
-			Name:        "Other Configs",
-			Description: "This example shows how to read the spec from a URL and add other configurations",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(exampleForOtherConfigs)),
-			Output:      ignoreError(exampleForOtherConfigs),
-		},
-
-		// Basic Examples
-		{
-			Name:        "Basic Usage",
-			Description: "This example shows how to generate HTML documentation from a single OpenAPI specification file.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicUsage)),
-			Output:      ignoreError(examples.ExampleBasicUsage),
-		},
-
-		// Multi-file Spec Examples
-		{
-			Name:        "Multi-File Specification",
-			Description: "This example shows how to load OpenAPI specs from multiple files organized in a structured directory layout, useful for large APIs where you want to split schemas, paths, and responses into separate files.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultiFileSpec)),
-			Output:      ignoreError(examples.ExampleMultiFileSpec),
-		},
-
-		// Spec Modification Examples
-		{
-			Name:        "Basic Modification",
-			Description: "This example shows how to dynamically modify API title, description, and version information at runtime.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicModification)),
-			Output:      ignoreError(examples.ExampleBasicModification),
-		},
-		{
-			Name:        "Server Modification",
-			Description: "This example shows how to add dynamic server URLs based on environment or request, useful for multi-environment deployments.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleServerModification)),
-			Output:      ignoreError(examples.ExampleServerModification),
-		},
-		{
-			Name:        "Dynamic Information",
-			Description: "This example shows how to add dynamic information and tags based on current state, including runtime-generated content and custom tags.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicInfo)),
-			Output:      ignoreError(examples.ExampleDynamicInfo),
-		},
-		{
-			Name:        "Path Analysis",
-			Description: "This example shows how to analyze and display information about documented API paths, including endpoint statistics and path listings.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePathModification)),
-			Output:      ignoreError(examples.ExamplePathModification),
-		},
-
-		// HTTP Server Integration Examples
-		{
-			Name:        "Static Documentation",
-			Description: "This example shows how to create simple static documentation with proper headers and caching for production use.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleStaticDocumentation)),
-			Output:      ignoreError(examples.ExampleStaticDocumentation),
-		},
-		{
-			Name:        "Dynamic Documentation",
-			Description: "This example shows how to generate documentation with custom metadata based on request or environment, including dynamic titles and timestamps.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicDocumentation)),
-			Output:      ignoreError(examples.ExampleDynamicDocumentation),
-		},
-		{
-			Name:        "URL-Based Documentation",
-			Description: "This example shows how to load specification from an external URL, useful for documentation services or when specs are hosted elsewhere.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleURLBasedDocumentation)),
-			Output:      ignoreError(examples.ExampleURLBasedDocumentation),
-		},
-		{
-			Name:        "API Version 1",
-			Description: "This example shows how to serve documentation for multiple API versions with version-specific metadata and theming.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV1)),
-			Output:      ignoreError(examples.ExampleAPIV1),
-		},
-		{
-			Name:        "API Version 2",
-			Description: "This example shows how to serve documentation for a newer API version using external specifications with enhanced theming and dark mode.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV2)),
-			Output:      ignoreError(examples.ExampleAPIV2),
-		},
-
-		// URL-based Loading Examples
-		{
-			Name:        "Scalar Galaxy API",
-			Description: "This example shows how to load the Scalar Galaxy API specification directly from a CDN URL.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleScalarGalaxy)),
-			Output:      ignoreError(examples.ExampleScalarGalaxy),
-		},
-		{
-			Name:        "Petstore API",
-			Description: "This example shows how to load the classic Petstore OpenAPI specification from the official repository.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePetstore)),
-			Output:      ignoreError(examples.ExamplePetstore),
-		},
-		{
-			Name:        "GitHub API",
-			Description: "This example shows how to load and display the complete GitHub REST API documentation using their public OpenAPI specification.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleGitHubAPI)),
-			Output:      ignoreError(examples.ExampleGitHubAPI),
-		},
-		{
-			Name:        "OpenAI API Demo",
-			Description: "This example shows how to load external API documentation with custom titles, descriptions, and alternative theming (using Scalar Galaxy as demo).",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOpenAIAPI)),
-			Output:      ignoreError(examples.ExampleOpenAIAPI),
-		},
-		{
-			Name:        "Customized External API",
-			Description: "This example shows how to load external specifications with comprehensive examples. including custom CSS, theming, and UI options for branded documentation.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomizedExternal)),
-			Output:      ignoreError(examples.ExampleCustomizedExternal),
-		},
-
-		// Theme Examples
-		{
-			Name:        "Default Theme",
-			Description: "This example shows the default theme with clean, modern styling for professional API documentation.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeDefault)),
-			Output:      ignoreError(examples.ExampleThemeDefault),
-		},
-		{
-			Name:        "Moon Theme",
-			Description: "This example shows the moon theme with dark styling and blue accents, perfect for modern dark-mode preferences.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeMoon)),
-			Output:      ignoreError(examples.ExampleThemeMoon),
-		},
-		{
-			Name:        "Purple Theme",
-			Description: "This example shows the purple theme with vibrant purple color scheme for distinctive and creative API documentation.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemePurple)),
-			Output:      ignoreError(examples.ExampleThemePurple),
-		},
-		{
-			Name:        "Solarized Theme",
-			Description: "This example shows the solarized theme based on the popular Solarized color scheme, offering excellent readability and reduced eye strain.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeSolarized)),
-			Output:      ignoreError(examples.ExampleThemeSolarized),
-		},
-
-		// Layout Examples
-		{
-			Name:        "Modern Layout",
-			Description: "This example shows the modern layout with contemporary design elements and enhanced user experience for API documentation.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutModern)),
-			Output:      ignoreError(examples.ExampleLayoutModern),
-		},
-		{
-			Name:        "Classic Layout",
-			Description: "This example shows the classic layout with traditional documentation design, familiar to users of conventional API documentation tools.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutClassic)),
-			Output:      ignoreError(examples.ExampleLayoutClassic),
-		},
-
-		// Visibility Examples
-		{
-			Name:        "Hide Sidebar",
-			Description: "This example shows how to hide the sidebar to create a cleaner, more focused documentation layout with more space for content.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideSidebar)),
-			Output:      ignoreError(examples.ExampleHideSidebar),
-		},
-		{
-			Name:        "Hide Models",
-			Description: "This example shows how to hide the models section to focus purely on API endpoints, useful for endpoint-centric documentation.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideModels)),
-			Output:      ignoreError(examples.ExampleHideModels),
-		},
-		{
-			Name:        "Dark Mode",
-			Description: "This example shows how to enable dark mode by default, providing a modern dark interface that's easier on the eyes.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDarkMode)),
-			Output:      ignoreError(examples.ExampleDarkMode),
-		},
-
-		// Advanced Customization Examples
-		{
-			Name:        "Custom CSS",
-			Description: "This example shows how to apply custom CSS overrides to create branded documentation with custom colors, fonts, and styling elements.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSS)),
-			Output:      ignoreError(examples.ExampleCustomCSS),
-		},
-		{
-			Name:        "All Options Combined",
-			Description: "This example shows how to combine multiple examples. options including theme, layout, UI controls, custom CSS, and client hiding for comprehensive documentation branding.",
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAllOptions)),
-			Output:      ignoreError(examples.ExampleAllOptions),
-		},
-	}
-}
-
 func ignoreError(fn ExampleFn) string {
-	content, _ := fn()
+	content, err := fn()
+	if err != nil {
+		panic(err)
+	}
 	return content
 }
 
@@ -414,4 +208,217 @@ func (f *FindBlockByLine) Visit(node ast.Node) ast.Visitor {
 		}
 	}
 	return f
+}
+
+func getExamples() []*Example {
+	return []*Example{
+		// Basic Examples
+		{
+			Name:        "Basic Usage",
+			Description: `Generate HTML documentation from a single OpenAPI spec file`,
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicUsage)),
+			Output:      ignoreError(examples.ExampleBasicUsage),
+		},
+
+		// Multi-file Spec Examples
+		{
+			Name: "Multi-File Specification",
+			Description: `Load OpenAPI specs from multiple files in structured directories,
+				suitable for large APIs with split schemas and paths`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultiFileSpec)),
+			Output: ignoreError(examples.ExampleMultiFileSpec),
+		},
+
+		// Spec Modification Examples
+		{
+			Name:        "Basic Modification",
+			Description: `Dynamically modify API title, description, and version at runtime`,
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicModification)),
+			Output:      ignoreError(examples.ExampleBasicModification),
+		},
+		{
+			Name: "Server Modification",
+			Description: `Add dynamic server URLs based on environment,
+				useful for multi-environment deployments`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleServerModification)),
+			Output: ignoreError(examples.ExampleServerModification),
+		},
+		{
+			Name: "Dynamic Information",
+			Description: `Add dynamic information and tags based on current state,
+				including runtime-generated content`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicInfo)),
+			Output: ignoreError(examples.ExampleDynamicInfo),
+		},
+		{
+			Name: "Path Analysis",
+			Description: `Analyze and display API path information,
+				including endpoint statistics and listings`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePathModification)),
+			Output: ignoreError(examples.ExamplePathModification),
+		},
+		{
+			Name:        "Spec from Bytes",
+			Description: `Load spec from embedded bytes, allowing for in-code specification without external files`,
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleForSpecBytes)),
+			Output:      ignoreError(examples.ExampleForSpecBytes),
+		},
+
+		// HTTP Server Integration Examples
+		{
+			Name: "Static Documentation",
+			Description: `Create static documentation with proper headers and caching
+				for production use`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleStaticDocumentation)),
+			Output: ignoreError(examples.ExampleStaticDocumentation),
+		},
+		{
+			Name: "Dynamic Documentation",
+			Description: `Generate documentation with custom metadata based on request,
+				including dynamic titles and timestamps`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicDocumentation)),
+			Output: ignoreError(examples.ExampleDynamicDocumentation),
+		},
+		{
+			Name: "URL-Based Documentation",
+			Description: `Load specification from external URL,
+				useful when specs are hosted elsewhere`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleURLBasedDocumentation)),
+			Output: ignoreError(examples.ExampleURLBasedDocumentation),
+		},
+		{
+			Name: "API Version 1",
+			Description: `Serve documentation for multiple API versions
+				with version-specific metadata and theming`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV1)),
+			Output: ignoreError(examples.ExampleAPIV1),
+		},
+		{
+			Name: "API Version 2",
+			Description: `Serve newer API version documentation using external specs
+				with enhanced theming and dark mode`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV2)),
+			Output: ignoreError(examples.ExampleAPIV2),
+		},
+
+		// URL-based Loading Examples
+		{
+			Name:        "Scalar Galaxy API",
+			Description: `Load Scalar Galaxy API specification directly from CDN URL`,
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleScalarGalaxy)),
+			Output:      ignoreError(examples.ExampleScalarGalaxy),
+		},
+		{
+			Name:        "Petstore API",
+			Description: `Load classic Petstore OpenAPI spec from official repository`,
+			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePetstore)),
+			Output:      ignoreError(examples.ExamplePetstore),
+		},
+		{
+			Name: "GitHub API",
+			Description: `Load and display complete GitHub REST API documentation
+				using their public OpenAPI specification`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleGitHubAPI)),
+			Output: ignoreError(examples.ExampleGitHubAPI),
+		},
+		{
+			Name: "OpenAI API Demo",
+			Description: `Load external API documentation with custom titles and theming
+				(using Scalar Galaxy as demo)`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOpenAIAPI)),
+			Output: ignoreError(examples.ExampleOpenAIAPI),
+		},
+		{
+			Name: "Customized External API",
+			Description: `Load external specs with comprehensive customization,
+				including custom CSS and UI options for branding`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomizedExternal)),
+			Output: ignoreError(examples.ExampleCustomizedExternal),
+		},
+
+		// Theme Examples
+		{
+			Name: "Default Theme",
+			Description: `Default theme with clean, modern styling
+				for professional API documentation`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeDefault)),
+			Output: ignoreError(examples.ExampleThemeDefault),
+		},
+		{
+			Name: "Moon Theme",
+			Description: `Moon theme with dark styling and blue accents,
+				perfect for modern dark-mode preferences`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeMoon)),
+			Output: ignoreError(examples.ExampleThemeMoon),
+		},
+		{
+			Name: "Purple Theme",
+			Description: `Purple theme with vibrant color scheme
+				for distinctive API documentation`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemePurple)),
+			Output: ignoreError(examples.ExampleThemePurple),
+		},
+		{
+			Name: "Solarized Theme",
+			Description: `Solarized theme based on popular color scheme,
+				offering excellent readability and reduced eye strain`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeSolarized)),
+			Output: ignoreError(examples.ExampleThemeSolarized),
+		},
+
+		// Layout Examples
+		{
+			Name: "Modern Layout",
+			Description: `Modern layout with contemporary design elements
+				and enhanced user experience`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutModern)),
+			Output: ignoreError(examples.ExampleLayoutModern),
+		},
+		{
+			Name: "Classic Layout",
+			Description: `Classic layout with traditional documentation design,
+				familiar from conventional API tools`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutClassic)),
+			Output: ignoreError(examples.ExampleLayoutClassic),
+		},
+
+		// Visibility Examples
+		{
+			Name: "Hide Sidebar",
+			Description: `Hide sidebar for cleaner, focused layout
+				with more space for content`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideSidebar)),
+			Output: ignoreError(examples.ExampleHideSidebar),
+		},
+		{
+			Name: "Hide Models",
+			Description: `Hide models section to focus on API endpoints,
+				useful for endpoint-centric documentation`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideModels)),
+			Output: ignoreError(examples.ExampleHideModels),
+		},
+		{
+			Name: "Dark Mode",
+			Description: `Enable dark mode by default for modern interface
+				that's easier on the eyes`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDarkMode)),
+			Output: ignoreError(examples.ExampleDarkMode),
+		},
+
+		// Advanced Customization Examples
+		{
+			Name: "Custom CSS",
+			Description: `Apply custom CSS overrides for branded documentation
+				with custom colors, fonts, and styling`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSS)),
+			Output: ignoreError(examples.ExampleCustomCSS),
+		},
+		{
+			Name: "All Options Combined",
+			Description: `Combine multiple options including theme, layout, UI controls,
+				and custom CSS for comprehensive documentation branding`,
+			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAllOptions)),
+			Output: ignoreError(examples.ExampleAllOptions),
+		},
+	}
 }

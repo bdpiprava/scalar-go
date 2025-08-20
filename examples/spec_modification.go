@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	scalargo "github.com/bdpiprava/scalar-go"
+	"github.com/bdpiprava/scalar-go/data"
 	"github.com/bdpiprava/scalar-go/model"
 )
 
 // ExampleBasicModification demonstrates basic spec information changes
-// @example Basic Modification
-// @description This example shows how to dynamically modify API title, description, and version information at runtime.
 func ExampleBasicModification() (string, error) {
 	description := "This API specification has been dynamically modified to show custom title and description."
 	return scalargo.NewV2(
@@ -25,8 +24,6 @@ func ExampleBasicModification() (string, error) {
 }
 
 // ExampleServerModification demonstrates dynamic server URL modification
-// @example Server Modification
-// @description This example shows how to add dynamic server URLs based on environment or request, useful for multi-environment deployments.
 func ExampleServerModification() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -52,8 +49,6 @@ func ExampleServerModification() (string, error) {
 }
 
 // ExampleDynamicInfo demonstrates runtime information updates
-// @example Dynamic Information
-// @description This example shows how to add dynamic information and tags based on current state, including runtime-generated content and custom tags.
 func ExampleDynamicInfo() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -64,7 +59,7 @@ func ExampleDynamicInfo() (string, error) {
 
 			spec.Info.Description = toPrt(fmt.Sprintf(
 				"%s\n\n**Note:** This documentation was generated dynamically and includes runtime modifications.",
-				spec.Info.Description,
+				*spec.Info.Description,
 			))
 
 			spec.Tags = append(spec.Tags, model.Tag{
@@ -78,8 +73,6 @@ func ExampleDynamicInfo() (string, error) {
 }
 
 // ExamplePathModification demonstrates working with API paths
-// @example Path Analysis
-// @description This example shows how to analyze and display information about documented API paths, including endpoint statistics and path listings.
 func ExamplePathModification() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -94,10 +87,25 @@ func ExamplePathModification() (string, error) {
 				pathInfo += fmt.Sprintf("- %s %s\n", path.Method, path.Path)
 			}
 
-			spec.Info.Description = toPrt(*spec.Info.Description + pathInfo)
+			var description string
+			if spec.Info.Description != nil {
+				description = *spec.Info.Description
+			}
+			spec.Info.Description = toPrt(description + pathInfo)
 
 			return spec
 		}),
+	)
+}
+
+// ExampleForSpecBytes demonstrates loading a spec from embedded bytes
+func ExampleForSpecBytes() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecBytes(data.PetStoreSpec),
+		scalargo.WithMetaDataOpts(
+			scalargo.WithTitle("Pet Store API (Embedded)"),
+			scalargo.WithKeyValue("Description", "Self-contained build with embedded spec"),
+		),
 	)
 }
 
