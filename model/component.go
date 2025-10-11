@@ -2,14 +2,14 @@ package model
 
 // Components holds a set of reusable objects for different aspects of the OAS.
 type Components struct {
-	Schemas         GenericObject `yaml:"schemas" json:"schemas"`
-	Parameters      GenericObject `yaml:"parameters" json:"parameters"`
-	Responses       GenericObject `yaml:"responses" json:"responses"`
-	Examples        GenericObject `yaml:"examples" json:"examples"`
-	RequestBodies   GenericObject `yaml:"requestBodies" json:"requestBodies"`
-	Headers         GenericObject `yaml:"headers" json:"headers"`
-	SecuritySchemes GenericObject `yaml:"securitySchemes" json:"securitySchemes"`
-	Link            GenericObject `yaml:"links" json:"links"`
-	Callbacks       GenericObject `yaml:"callbacks" json:"callbacks"`
-	PathItems       GenericObject `yaml:"pathItems" json:"pathItems"`
+	Schemas         GenericObject `yaml:"schemas,omitempty" json:"schemas,omitempty"`
+	Parameters      GenericObject `yaml:"parameters,omitempty" json:"parameters,omitempty"`
+	Responses       GenericObject `yaml:"responses,omitempty" json:"responses,omitempty"`
+	Examples        GenericObject `yaml:"examples,omitempty" json:"examples,omitempty"`
+	RequestBodies   GenericObject `yaml:"requestBodies,omitempty" json:"requestBodies,omitempty"`
+	Headers         GenericObject `yaml:"headers,omitempty" json:"headers,omitempty"`
+	SecuritySchemes GenericObject `yaml:"securitySchemes,omitempty" json:"securitySchemes,omitempty"`
+	Link            GenericObject `yaml:"links,omitempty" json:"links,omitempty"`
+	Callbacks       GenericObject `yaml:"callbacks,omitempty" json:"callbacks,omitempty"`
+	PathItems       GenericObject `yaml:"pathItems,omitempty" json:"pathItems,omitempty"`
 }
