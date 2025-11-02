@@ -90,17 +90,40 @@ func buildOptions(opts ...Option) *Options {
 	return options
 }
 
-var htmlTemplate = template.Must(template.New("scalar").Parse(`<!DOCTYPE html>
+// htmlTemplateDataAttr is the template for data-attribute rendering mode (legacy)
+var htmlTemplateDataAttr = template.Must(template.New("scalar-data-attr").Parse(`<!DOCTYPE html>
 <html>
   <head>
     <title>{{.Title}}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style>{{.CSS}}</style>
+    {{.CustomHeadJS}}
   </head>
   <body>
     {{.SpecScript}}
     <script src="{{.CDN}}"></script>
+    {{.CustomBodyJS}}
+  </body>
+</html>`))
+
+// htmlTemplateJSAPI is the template for JavaScript API rendering mode (recommended)
+var htmlTemplateJSAPI = template.Must(template.New("scalar-js-api").Parse(`<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{.Title}}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>{{.CSS}}</style>
+    {{.CustomHeadJS}}
+  </head>
+  <body>
+    <div id="api-reference"></div>
+    <script src="{{.CDN}}"></script>
+    <script>
+      {{.InitScript}}
+    </script>
+    {{.CustomBodyJS}}
   </body>
 </html>`))
 
@@ -112,11 +135,14 @@ func renderHTML(title, cssOverride, specScript, cdn string) string {
 	sanitizedCSS := sanitizer.CSS(cssOverride)
 
 	// Execute template with proper type conversions for context-aware escaping
-	err := htmlTemplate.Execute(&buf, map[string]interface{}{
-		"Title":      title,                      // Auto-escaped for HTML context
-		"CSS":        template.CSS(sanitizedCSS), // CSS-safe after sanitization
-		"SpecScript": template.HTML(specScript),  // Already validated JSON, safe to render as HTML
-		"CDN":        cdn,                        // Auto-escaped for attribute context
+	// For now, use data-attribute template (will be refactored to support both modes)
+	err := htmlTemplateDataAttr.Execute(&buf, map[string]interface{}{
+		"Title":        title,                      // Auto-escaped for HTML context
+		"CSS":          template.CSS(sanitizedCSS), // CSS-safe after sanitization
+		"SpecScript":   template.HTML(specScript),  // Already validated JSON, safe to render as HTML
+		"CDN":          cdn,                        // Auto-escaped for attribute context
+		"CustomHeadJS": template.HTML(""),          // Empty for now, will be added in later ticket
+		"CustomBodyJS": template.HTML(""),          // Empty for now, will be added in later ticket
 	})
 
 	if err != nil {
