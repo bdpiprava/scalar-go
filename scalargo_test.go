@@ -179,6 +179,138 @@ func getFirstGroup(matcher *regexp.Regexp, content string) string {
 	return ""
 }
 
+func Test_XSS_Prevention(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name              string
+		opts              []scalargo.Option
+		maliciousContent  string
+		shouldNotContain  []string // XSS payloads that should be escaped
+		shouldContain     []string // Expected escaped versions
+		description       string
+	}{
+		{
+			name: "should escape XSS in title tag",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithMetaDataOpts(
+					scalargo.WithKeyValue("title", "</title><script>alert('XSS')</script><title>"),
+				),
+			},
+			shouldNotContain: []string{
+				"</title><script>alert('XSS')</script><title>",
+				"<script>alert('XSS')</script>",
+			},
+			shouldContain: []string{
+				"&lt;/title&gt;&lt;script&gt;alert(&#39;XSS&#39;)&lt;/script&gt;&lt;title&gt;",
+			},
+			description: "Title should be HTML-escaped to prevent breaking out of title tag",
+		},
+		{
+			name: "should sanitize XSS in CSS override",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithOverrideCSS("</style><script>alert('CSS XSS')</script><style>body { color: red; }"),
+			},
+			shouldNotContain: []string{
+				"<script>alert('CSS XSS')</script>",                                    // Script tag should be removed
+				"</style><script>",                                                    // Must not allow breaking out of style
+				"<style></style>",                                                     // Empty style tags from injection
+			},
+			shouldContain: []string{
+				"body { color: red; }",                                               // Valid CSS preserved
+				// Note: "alert('CSS XSS')" text remains but is harmless - it's invalid CSS that browsers ignore
+			},
+			description: "CSS should have HTML tags stripped to prevent breaking out of style tag",
+		},
+		{
+			name: "should escape XSS in CDN URL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithCDN("\" onerror=\"alert('CDN XSS')"),
+			},
+			shouldNotContain: []string{
+				"\" onerror=\"alert('CDN XSS')",
+				"onerror=\"alert('CDN XSS')",
+				"<script src=\"\" onerror=\"alert('CDN XSS')\">", // Must not allow attribute injection
+			},
+			description: "CDN URL should be escaped to prevent attribute injection",
+		},
+		{
+			name: "should handle multiple XSS vectors simultaneously",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithMetaDataOpts(
+					scalargo.WithKeyValue("title", "<script>alert(1)</script>"),
+				),
+				scalargo.WithOverrideCSS("</style><img src=x onerror=alert(2)><style>body { color: blue; }"),
+				scalargo.WithCDN("javascript:alert(3)"),
+			},
+			shouldNotContain: []string{
+				"<script>alert(1)</script>",  // Title XSS should be escaped
+				"</style><img src=x onerror=alert(2)><style>",  // CSS HTML tags should be removed
+				"<img src=x onerror=alert(2)>",  // IMG tag should be removed
+				"javascript:alert(3)",  // Dangerous JS URL should be sanitized by template
+			},
+			shouldContain: []string{
+				"&lt;script&gt;alert(1)&lt;/script&gt;",  // Escaped title
+				"body { color: blue; }",  // CSS preserved, tags removed
+			},
+			description: "Should sanitize all XSS vectors when multiple are present",
+		},
+		{
+			name: "should escape HTML entities in title",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithMetaDataOpts(
+					scalargo.WithKeyValue("title", "<>&\"'"),
+				),
+			},
+			shouldNotContain: []string{
+				"<title><>&\"'</title>",
+			},
+			shouldContain: []string{
+				"&lt;&gt;&amp;&#34;&#39;",
+			},
+			description: "HTML entities should be properly escaped",
+		},
+		{
+			name: "should handle data URI XSS attempt in CDN",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithCDN("data:text/javascript,alert('XSS')"),
+			},
+			shouldNotContain: []string{
+				"<script src=\"data:text/javascript,alert('XSS')\"></script>",
+			},
+			description: "Data URIs should be escaped in CDN URL",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			html, err := scalargo.NewV2(tc.opts...)
+			require.NoError(t, err)
+			require.NotEmpty(t, html)
+
+			// Verify malicious content is not present in raw form
+			for _, malicious := range tc.shouldNotContain {
+				require.NotContains(t, html, malicious,
+					"HTML should not contain unescaped malicious content: %s", malicious)
+			}
+
+			// Verify escaped versions are present (if specified)
+			for _, escaped := range tc.shouldContain {
+				require.Contains(t, html, escaped,
+					"HTML should contain properly escaped content: %s", escaped)
+			}
+		})
+	}
+}
+
 // Helper function to safely call NewV2 and validate result without panics
 func assertNewV2NoPanic(t *testing.T, opts []scalargo.Option, wantTitle string, wantErr bool) {
 	t.Helper()

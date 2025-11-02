@@ -1,8 +1,11 @@
 package scalargo
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"html/template"
+	"regexp"
 	"strings"
 
 	"github.com/bdpiprava/scalar-go/loader"
@@ -11,6 +14,14 @@ import (
 
 // defaultTitle when title is not specified this default is used
 const defaultTitle = "API Reference"
+
+var htmlTagPattern = regexp.MustCompile(`<[^>]*>`)
+
+// sanitizeCSS removes HTML tags from CSS to prevent XSS while preserving CSS content
+func sanitizeCSS(css string) string {
+	// Remove all HTML tags (including </style>, <script>, etc.)
+	return htmlTagPattern.ReplaceAllString(css, "")
+}
 
 // New generates the HTML for the Scalar UI
 func New(apiFilesDir string, opts ...Option) (string, error) {
@@ -56,23 +67,43 @@ func buildOptions(opts ...Option) *Options {
 	return options
 }
 
-// renderHTML generte html from the provided options
-func renderHTML(title, ccsOverride, specScript, cdn string) string {
-	return fmt.Sprintf(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>%s</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style>%s</style>
-      </head>
-      <body>
-        %s
-        <script src="%s"></script>
-      </body>
-    </html>
-  `, title, ccsOverride, specScript, cdn)
+var htmlTemplate = template.Must(template.New("scalar").Parse(`<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{.Title}}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>{{.CSS}}</style>
+  </head>
+  <body>
+    {{.SpecScript}}
+    <script src="{{.CDN}}"></script>
+  </body>
+</html>`))
+
+// renderHTML generates HTML from the provided options with proper escaping to prevent XSS
+func renderHTML(title, cssOverride, specScript, cdn string) string {
+	var buf bytes.Buffer
+
+	// Sanitize CSS to remove HTML tags while preserving CSS content
+	sanitizedCSS := sanitizeCSS(cssOverride)
+
+	// Execute template with proper type conversions for context-aware escaping
+	err := htmlTemplate.Execute(&buf, map[string]interface{}{
+		"Title":      title,                         // Auto-escaped for HTML context
+		"CSS":        template.CSS(sanitizedCSS),    // CSS-safe after sanitization
+		"SpecScript": template.HTML(specScript),     // Already validated JSON, safe to render as HTML
+		"CDN":        cdn,                           // Auto-escaped for attribute context
+	})
+
+	if err != nil {
+		// Template execution should never fail with our static template
+		// If it does, return a safe error page instead of panicking
+		return fmt.Sprintf("<!DOCTYPE html><html><head><title>Error</title></head><body>Template error: %s</body></html>",
+			template.HTMLEscapeString(err.Error()))
+	}
+
+	return buf.String()
 }
 
 // GetSpecScript prepares and returns the spec script, prioritizing SpecURL, then SpecDirectory, then SpecBytes
