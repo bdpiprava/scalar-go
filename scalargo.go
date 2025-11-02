@@ -65,6 +65,9 @@ func NewV2(opts ...Option) (string, error) {
 		options.OverrideCSS,
 		specScript,
 		options.CDN,
+		options.CustomHeadJS,
+		options.CustomBodyJS,
+		options.RenderMode,
 	), nil
 }
 
@@ -128,22 +131,48 @@ var htmlTemplateJSAPI = template.Must(template.New("scalar-js-api").Parse(`<!DOC
 </html>`))
 
 // renderHTML generates HTML from the provided options with proper escaping to prevent XSS
-func renderHTML(title, cssOverride, specScript, cdn string) string {
+func renderHTML(title, cssOverride, specScript, cdn, customHeadJS, customBodyJS string, renderMode RenderMode) string {
 	var buf bytes.Buffer
 
 	// Sanitize CSS to remove HTML tags while preserving CSS content
 	sanitizedCSS := sanitizer.CSS(cssOverride)
 
+	// Select template based on render mode
+	var tmpl *template.Template
+	if renderMode == RenderModeJavaScriptAPI {
+		tmpl = htmlTemplateJSAPI
+	} else {
+		tmpl = htmlTemplateDataAttr
+	}
+
+	// Wrap custom JS in <script> tags if provided
+	headJS := ""
+	if customHeadJS != "" {
+		headJS = fmt.Sprintf("<script>%s</script>", customHeadJS)
+	}
+
+	bodyJS := ""
+	if customBodyJS != "" {
+		bodyJS = fmt.Sprintf("<script>%s</script>", customBodyJS)
+	}
+
 	// Execute template with proper type conversions for context-aware escaping
-	// For now, use data-attribute template (will be refactored to support both modes)
-	err := htmlTemplateDataAttr.Execute(&buf, map[string]interface{}{
+	data := map[string]interface{}{
 		"Title":        title,                      // Auto-escaped for HTML context
 		"CSS":          template.CSS(sanitizedCSS), // CSS-safe after sanitization
-		"SpecScript":   template.HTML(specScript),  // Already validated JSON, safe to render as HTML
 		"CDN":          cdn,                        // Auto-escaped for attribute context
-		"CustomHeadJS": template.HTML(""),          // Empty for now, will be added in later ticket
-		"CustomBodyJS": template.HTML(""),          // Empty for now, will be added in later ticket
-	})
+		"CustomHeadJS": template.HTML(headJS),      // Wrapped in script tags, user's responsibility
+		"CustomBodyJS": template.HTML(bodyJS),      // Wrapped in script tags, user's responsibility
+	}
+
+	// Add appropriate script field based on render mode
+	if renderMode == RenderModeJavaScriptAPI {
+		data["InitScript"] = template.JS(specScript) // JS-safe for <script> tag content
+	} else {
+		data["SpecScript"] = template.HTML(specScript) // Already validated JSON in script tag
+	}
+
+	err := tmpl.Execute(&buf, data)
 
 	if err != nil {
 		// Template execution should never fail with our static template
