@@ -311,6 +311,220 @@ func Test_XSS_Prevention(t *testing.T) {
 	}
 }
 
+func Test_CSS_Sanitization(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name             string
+		maliciousCSS     string
+		shouldNotContain []string // Dangerous patterns that must be removed
+		shouldContain    []string // Safe CSS that should be preserved
+		description      string
+	}{
+		{
+			name:         "Bypass 1: Malformed HTML tags with spaces",
+			maliciousCSS: "body { color: red; } < script>alert(1)</script > .test { margin: 0; }",
+			shouldNotContain: []string{
+				"< script>",
+				"</script >",
+				"<script>",
+				"</script>",
+			},
+			shouldContain: []string{
+				"body { color: red; }",
+				".test { margin: 0; }",
+			},
+			description: "Should remove malformed HTML tags with extra spaces",
+		},
+		{
+			name:         "Bypass 2: HTML entities",
+			maliciousCSS: "body { color: red; } &lt;script&gt;alert(1)&lt;/script&gt;",
+			shouldNotContain: []string{
+				"&lt;",
+				"&gt;",
+				"&amp;",
+				"&#",
+			},
+			shouldContain: []string{
+				"body { color: red; }",
+			},
+			description: "Should remove HTML entities to prevent decoding attacks",
+		},
+		{
+			name:         "Bypass 3: CSS expressions (old IE)",
+			maliciousCSS: "body { width: expression(alert(1)); color: red; }",
+			shouldNotContain: []string{
+				"expression(",
+				"expression(alert(1))",
+			},
+			shouldContain: []string{
+				"color: red;",
+			},
+			description: "Should remove CSS expressions",
+		},
+		{
+			name:         "Bypass 4: Data URIs with embedded scripts",
+			maliciousCSS: "body { background: url('data:text/html,<script>alert(1)</script>'); color: blue; }",
+			shouldNotContain: []string{
+				"data:text/html",
+				"data:",
+				"<script>",
+			},
+			shouldContain: []string{
+				"color: blue;",
+				"background: url(",
+			},
+			description: "Should remove data: URIs from CSS",
+		},
+		{
+			name:         "Bypass 5: JavaScript protocol in URLs",
+			maliciousCSS: "a { background: url(javascript:alert(1)); color: green; }",
+			shouldNotContain: []string{
+				"javascript:",
+				"javascript:alert",
+			},
+			shouldContain: []string{
+				"color: green;",
+			},
+			description: "Should remove javascript: protocol from URLs",
+		},
+		{
+			name:         "Bypass 6: vbscript protocol",
+			maliciousCSS: "div { background: url(vbscript:msgbox); }",
+			shouldNotContain: []string{
+				"vbscript:",
+			},
+			description: "Should remove vbscript: protocol",
+		},
+		{
+			name:         "Bypass 7: @import with external malicious CSS",
+			maliciousCSS: "@import url('http://evil.com/xss.css'); body { color: red; }",
+			shouldNotContain: []string{
+				"@import",
+				"http://evil.com",
+			},
+			shouldContain: []string{
+				"body { color: red; }",
+			},
+			description: "Should remove @import rules",
+		},
+		{
+			name:         "Bypass 8: Style-breaking sequences",
+			maliciousCSS: "body { color: red; } </style><script>alert(1)</script><style> .test { margin: 0; }",
+			shouldNotContain: []string{
+				"</style>",
+				"<script>",
+			},
+			shouldContain: []string{
+				"body { color: red; }",
+				".test { margin: 0; }",
+			},
+			description: "Should remove style-breaking tags",
+		},
+		{
+			name:         "Bypass 9: Event handlers embedded in CSS",
+			maliciousCSS: "div { color: red; } onclick=alert(1) .test { margin: 0; }",
+			shouldNotContain: []string{
+				"onclick=",
+				"onerror=",
+			},
+			shouldContain: []string{
+				"div { color: red; }",
+				".test { margin: 0; }",
+			},
+			description: "Should remove event handler attributes",
+		},
+		{
+			name:         "Bypass 10: Multiple attack vectors combined",
+			maliciousCSS: "@import 'evil.css'; body { width: expression(alert(1)); background: url(javascript:void(0)); } </style><script>alert(2)</script><style> .test { color: url('data:text/html,<img src=x onerror=alert(3)>'); }",
+			shouldNotContain: []string{
+				"@import",
+				"expression(",
+				"javascript:",
+				"data:",
+				"</style>",
+				"<script>",
+				"onerror=",
+			},
+			shouldContain: []string{
+				"body {",
+				".test {",
+			},
+			description: "Should handle multiple simultaneous attack vectors",
+		},
+		{
+			name:         "Bypass 11: Case variations",
+			maliciousCSS: "body { background: URL(JAVASCRIPT:alert(1)); width: ExPrEsSiOn(alert(2)); } @IMPORT 'evil.css';",
+			shouldNotContain: []string{
+				"JAVASCRIPT:",
+				"ExPrEsSiOn(",
+				"@IMPORT",
+			},
+			description: "Should handle case-insensitive attack patterns",
+		},
+		{
+			name:         "Safe CSS should be preserved",
+			maliciousCSS: "body { color: #fff; margin: 0; padding: 10px; } .container { display: flex; background: url('/images/bg.png'); }",
+			shouldNotContain: []string{
+				// Nothing dangerous here
+			},
+			shouldContain: []string{
+				"color: #fff;",
+				"margin: 0;",
+				"padding: 10px;",
+				"display: flex;",
+				"background: url('/images/bg.png');",
+			},
+			description: "Should preserve legitimate CSS including safe relative URLs",
+		},
+		{
+			name:         "Empty CSS should remain empty",
+			maliciousCSS: "",
+			shouldNotContain: []string{},
+			shouldContain:    []string{},
+			description:      "Empty CSS should not cause issues",
+		},
+		{
+			name:             "Whitespace-only CSS should be handled gracefully",
+			maliciousCSS:     "   \n\t  ",
+			shouldNotContain: []string{},
+			shouldContain:    []string{},
+			description:      "Whitespace-only CSS should not cause errors (may be stripped by template engine)",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			html, err := scalargo.NewV2(
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithOverrideCSS(tc.maliciousCSS),
+			)
+
+			require.NoError(t, err)
+			require.NotEmpty(t, html)
+
+			// Extract the CSS from the rendered HTML
+			content := parseContent(html)
+
+			// Verify dangerous patterns are not present
+			for _, dangerous := range tc.shouldNotContain {
+				require.NotContains(t, content.overrideCSS, dangerous,
+					"CSS should not contain dangerous pattern: %s\nDescription: %s\nActual CSS: %s",
+					dangerous, tc.description, content.overrideCSS)
+			}
+
+			// Verify safe CSS is preserved
+			for _, safe := range tc.shouldContain {
+				require.Contains(t, content.overrideCSS, safe,
+					"CSS should preserve safe content: %s\nDescription: %s\nActual CSS: %s",
+					safe, tc.description, content.overrideCSS)
+			}
+		})
+	}
+}
+
 // Helper function to safely call NewV2 and validate result without panics
 func assertNewV2NoPanic(t *testing.T, opts []scalargo.Option, wantTitle string, wantErr bool) {
 	t.Helper()
