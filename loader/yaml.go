@@ -38,20 +38,49 @@ func isYamlFile(path string) bool {
 }
 
 // readDirRecursively reads a directory recursively and returns as model.GenericObject
-func readDirRecursively(dir string, key string) (*model.GenericObject, error) {
+// rootDir is the original root directory to validate all paths against
+// dir is the current directory being read (must be validated to be within rootDir)
+func readDirRecursively(rootDir string, dir string, key string) (*model.GenericObject, error) {
 	data := model.GenericObject{}
 	if !exists(dir) {
 		return &data, nil
 	}
-	files, err := os.ReadDir(dir)
+
+	// Convert rootDir to absolute path for consistent validation
+	absRoot, err := filepath.Abs(rootDir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve root directory: %w", err)
+	}
+
+	// Convert dir to absolute path
+	absDir, err := filepath.Abs(dir)
+	if err != nil {
+		return nil, fmt.Errorf("failed to resolve directory: %w", err)
+	}
+
+	// Validate that dir is within rootDir
+	if !strings.HasPrefix(absDir, absRoot+string(filepath.Separator)) && absDir != absRoot {
+		return nil, fmt.Errorf("path traversal detected: '%s' escapes root directory '%s'", dir, rootDir)
+	}
+
+	files, err := os.ReadDir(absDir)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, file := range files {
 		fileName := file.Name()
+
+		// Construct the target path
+		targetPath := filepath.Join(absDir, fileName)
+
+		// Validate that target is within root (defense in depth)
+		if !strings.HasPrefix(targetPath, absRoot+string(filepath.Separator)) && targetPath != absRoot {
+			return nil, fmt.Errorf("path traversal detected: '%s' escapes root directory", fileName)
+		}
+
 		if file.IsDir() {
-			subData, err := readDirRecursively(filepath.Join(dir, fileName), key)
+			subData, err := readDirRecursively(absRoot, targetPath, key)
 			if err != nil {
 				return &data, err
 			}
@@ -61,7 +90,7 @@ func readDirRecursively(dir string, key string) (*model.GenericObject, error) {
 		}
 
 		ext := filepath.Ext(fileName)
-		fileContent, err := readYamlFile[model.GenericObject](filepath.Join(dir, fileName))
+		fileContent, err := readYamlFile[model.GenericObject](targetPath)
 		if err != nil {
 			return nil, err
 		}

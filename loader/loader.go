@@ -6,15 +6,49 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/bdpiprava/scalar-go/model"
 	"github.com/bdpiprava/scalar-go/sanitizer"
 	"gopkg.in/yaml.v3"
 )
 
+// validatePath ensures the resolved path is within the allowed root directory
+// This prevents path traversal attacks using "../" sequences
+func validatePath(rootDir, targetPath string) (string, error) {
+	// Clean and resolve the root directory to absolute path
+	cleanRoot, err := filepath.Abs(filepath.Clean(rootDir))
+	if err != nil {
+		return "", fmt.Errorf("invalid root directory: %w", err)
+	}
+
+	// Clean the target path to remove ".." and "./" sequences
+	cleanTarget := filepath.Clean(targetPath)
+
+	// Join and resolve to absolute path
+	fullPath, err := filepath.Abs(filepath.Join(cleanRoot, cleanTarget))
+	if err != nil {
+		return "", fmt.Errorf("invalid file path: %w", err)
+	}
+
+	// Ensure fullPath starts with cleanRoot followed by separator
+	// This prevents escaping the root directory via path traversal
+	if !strings.HasPrefix(fullPath, cleanRoot+string(filepath.Separator)) && fullPath != cleanRoot {
+		return "", fmt.Errorf("path traversal detected: '%s' escapes root directory '%s'", targetPath, rootDir)
+	}
+
+	return fullPath, nil
+}
+
 // LoadFromDir reads the API specification from the provided root directory
 func LoadFromDir(rootDir string, apiFileName string) (*model.Spec, error) {
-	content, err := readFile[model.Spec](filepath.Join(rootDir, apiFileName))
+	// Validate the main API file path
+	apiFilePath, err := validatePath(rootDir, apiFileName)
+	if err != nil {
+		return nil, err
+	}
+
+	content, err := readFile[model.Spec](apiFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -25,19 +59,34 @@ func LoadFromDir(rootDir string, apiFileName string) (*model.Spec, error) {
 	specContent.Components.Parameters = initializeIfNil(specContent.Components.Parameters)
 	specContent.Components.Responses = initializeIfNil(specContent.Components.Responses)
 
-	paths, err := readDirRecursively(filepath.Join(rootDir, "paths"), "paths")
+	// Validate paths subdirectory
+	pathsDir, err := validatePath(rootDir, "paths")
+	if err != nil {
+		return nil, err
+	}
+	paths, err := readDirRecursively(rootDir, pathsDir, "paths")
 	if err != nil {
 		return nil, err
 	}
 	maps.Copy(specContent.Paths, *paths)
 
-	responses, err := readDirRecursively(filepath.Join(rootDir, "responses"), "responses")
+	// Validate responses subdirectory
+	responsesDir, err := validatePath(rootDir, "responses")
+	if err != nil {
+		return nil, err
+	}
+	responses, err := readDirRecursively(rootDir, responsesDir, "responses")
 	if err != nil {
 		return nil, err
 	}
 	maps.Copy(specContent.Components.Responses, *responses)
 
-	schemas, err := readDirRecursively(filepath.Join(rootDir, "schemas"), "schemas")
+	// Validate schemas subdirectory
+	schemasDir, err := validatePath(rootDir, "schemas")
+	if err != nil {
+		return nil, err
+	}
+	schemas, err := readDirRecursively(rootDir, schemasDir, "schemas")
 	if err != nil {
 		return nil, err
 	}
