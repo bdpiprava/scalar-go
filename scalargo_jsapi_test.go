@@ -59,7 +59,7 @@ func TestRenderMode_JavaScriptAPI_WithDirectory(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, html, `<div id="api-reference"></div>`)
 	assert.Contains(t, html, `Scalar.createApiReference('#api-reference',`)
-	assert.Contains(t, html, `"content":"{`) // Verify content field with JSON
+	assert.Contains(t, html, `"content":"{`)     // Verify content field with JSON
 	assert.Contains(t, html, `Swagger Petstore`) // Verify spec title is in the HTML
 	assert.NotContains(t, html, `<script id="api-reference"`)
 }
@@ -77,7 +77,7 @@ func TestWithCustomHeadJS(t *testing.T) {
 	// Should be in head, before CDN
 	headIdx := strings.Index(html, customJS)
 	cdnIdx := strings.Index(html, DefaultCDN)
-	assert.True(t, headIdx < cdnIdx, "Custom head JS should appear before CDN script")
+	assert.Less(t, headIdx, cdnIdx, "Custom head JS should appear before CDN script")
 }
 
 func TestWithCustomBodyJS(t *testing.T) {
@@ -93,7 +93,7 @@ func TestWithCustomBodyJS(t *testing.T) {
 	// Should be in body, after CDN
 	cdnIdx := strings.Index(html, DefaultCDN)
 	bodyJSIdx := strings.Index(html, customJS)
-	assert.True(t, bodyJSIdx > cdnIdx, "Custom body JS should appear after CDN script")
+	assert.Greater(t, bodyJSIdx, cdnIdx, "Custom body JS should appear after CDN script")
 }
 
 func TestWithCustomJS_BothHeadAndBody(t *testing.T) {
@@ -112,7 +112,7 @@ func TestWithCustomJS_BothHeadAndBody(t *testing.T) {
 
 	headIdx := strings.Index(html, headJS)
 	bodyIdx := strings.Index(html, bodyJS)
-	assert.True(t, headIdx < bodyIdx, "Head JS should appear before body JS")
+	assert.Less(t, headIdx, bodyIdx, "Head JS should appear before body JS")
 }
 
 func TestCustomJS_WithJavaScriptAPIMode(t *testing.T) {
@@ -137,9 +137,9 @@ func TestCustomJS_WithJavaScriptAPIMode(t *testing.T) {
 	initIdx := strings.Index(html, `Scalar.createApiReference`)
 	bodyIdx := strings.Index(html, bodyJS)
 
-	assert.True(t, headIdx < cdnIdx, "Head JS before CDN")
-	assert.True(t, cdnIdx < initIdx, "CDN before init script")
-	assert.True(t, initIdx < bodyIdx, "Init script before body JS")
+	assert.Less(t, headIdx, cdnIdx, "Head JS before CDN")
+	assert.Less(t, cdnIdx, initIdx, "CDN before init script")
+	assert.Less(t, initIdx, bodyIdx, "Init script before body JS")
 }
 
 func TestWithHideSearch(t *testing.T) {

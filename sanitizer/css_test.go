@@ -278,7 +278,7 @@ func TestCSS(t *testing.T) {
 			want:  "",
 		},
 		{
-			name:  "should handle complex real-world XSS attempt",
+			name: "should handle complex real-world XSS attempt",
 			input: `.evil {
 				background: url('javascript:void(document.cookie)');
 				width: expression(alert('XSS'));
@@ -369,12 +369,12 @@ func TestCSS_MultiPassSanitization(t *testing.T) {
 		want  string
 	}{
 		{
-			name: "should handle obfuscated javascript url with entities",
+			name:  "should handle obfuscated javascript url with entities",
 			input: `background: url('&#106;&#97;&#118;&#97;&#115;&#99;&#114;&#105;&#112;&#116;&#58;alert(1)');`,
 			want:  "background: url('alert(1)');",
 		},
 		{
-			name: "should handle expression within imported CSS",
+			name:  "should handle expression within imported CSS",
 			input: `@import url('data:text/css,*{width:expression(alert(1))}');`,
 			want:  "",
 		},
@@ -452,7 +452,7 @@ func BenchmarkCSS(b *testing.B) {
 	for _, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
+			for range b.N {
 				_ = sanitizer.CSS(tc.input)
 			}
 		})

@@ -340,8 +340,8 @@ func ExampleProductionAPIWithFullAuth() (string, error) {
 				scalargo.OAuth2Scheme(
 					scalargo.OAuth2FlowClientCredentials,
 					scalargo.OAuth2Config{
-						TokenURL:   "https://auth.production-api.com/token",
-						ClientID:   "", // Client provides their own
+						TokenURL:       "https://auth.production-api.com/token",
+						ClientID:       "", // Client provides their own
 						SelectedScopes: []string{"api:read", "api:write"},
 					},
 				),

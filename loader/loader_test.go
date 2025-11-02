@@ -95,53 +95,53 @@ func Test_PathTraversal_Prevention(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name         string
-		rootDir      string
-		apiFileName  string
+		name            string
+		rootDir         string
+		apiFileName     string
 		wantErrContains string
-		description  string
+		description     string
 	}{
 		{
-			name:         "should block path traversal with ../",
-			rootDir:      "../data/loader",
-			apiFileName:  "../../../etc/passwd",
+			name:            "should block path traversal with ../",
+			rootDir:         "../data/loader",
+			apiFileName:     "../../../etc/passwd",
 			wantErrContains: "path traversal detected",
-			description:  "Prevents reading files outside root using ../ sequences",
+			description:     "Prevents reading files outside root using ../ sequences",
 		},
 		{
-			name:         "should block reading parent directory files",
-			rootDir:      "../data/loader",
-			apiFileName:  "../../loader/loader.go",
+			name:            "should block reading parent directory files",
+			rootDir:         "../data/loader",
+			apiFileName:     "../../loader/loader.go",
 			wantErrContains: "path traversal detected",
-			description:  "Prevents reading source code via path traversal",
+			description:     "Prevents reading source code via path traversal",
 		},
 		{
-			name:         "should block reading /proc files",
-			rootDir:      "../data/loader",
-			apiFileName:  "../../../proc/self/environ",
+			name:            "should block reading /proc files",
+			rootDir:         "../data/loader",
+			apiFileName:     "../../../proc/self/environ",
 			wantErrContains: "path traversal detected",
-			description:  "Prevents reading sensitive /proc files",
+			description:     "Prevents reading sensitive /proc files",
 		},
 		{
-			name:         "should block reading .env files",
-			rootDir:      "../data/loader",
-			apiFileName:  "../../../.env",
+			name:            "should block reading .env files",
+			rootDir:         "../data/loader",
+			apiFileName:     "../../../.env",
 			wantErrContains: "path traversal detected",
-			description:  "Prevents reading environment variable files",
+			description:     "Prevents reading environment variable files",
 		},
 		{
-			name:         "should block reading SSH keys",
-			rootDir:      "../data/loader",
-			apiFileName:  "../../../../root/.ssh/id_rsa",
+			name:            "should block reading SSH keys",
+			rootDir:         "../data/loader",
+			apiFileName:     "../../../../root/.ssh/id_rsa",
 			wantErrContains: "path traversal detected",
-			description:  "Prevents reading SSH private keys",
+			description:     "Prevents reading SSH private keys",
 		},
 		{
-			name:         "should allow legitimate subdirectory access",
-			rootDir:      "../data/loader-multiple-files",
-			apiFileName:  "api.yml",
+			name:            "should allow legitimate subdirectory access",
+			rootDir:         "../data/loader-multiple-files",
+			apiFileName:     "api.yml",
 			wantErrContains: "",
-			description:  "Allows normal file access within root directory",
+			description:     "Allows normal file access within root directory",
 		},
 	}
 
@@ -177,7 +177,7 @@ func Test_PathTraversal_SymlinkProtection(t *testing.T) {
 		setup       func(t *testing.T) (rootDir, fileName string, cleanup func())
 	}{
 		{
-			name: "should validate final resolved path even with symlinks",
+			name:        "should validate final resolved path even with symlinks",
 			description: "Symlinks that resolve to paths outside root are blocked",
 			setup: func(t *testing.T) (string, string, func()) {
 				// This test demonstrates that even if symlinks exist,
@@ -208,17 +208,17 @@ func Test_validatePath_DirectTests(t *testing.T) {
 
 	// Direct unit tests for the validatePath function by calling LoadFromDir
 	tests := []struct {
-		name            string
-		rootDir         string
-		targetPath      string
-		expectError     bool
-		errorContains   string
+		name          string
+		rootDir       string
+		targetPath    string
+		expectError   bool
+		errorContains string
 	}{
 		{
-			name:          "allows normal file in root",
-			rootDir:       "../data/loader",
-			targetPath:    "pet-store.yaml",
-			expectError:   false,
+			name:        "allows normal file in root",
+			rootDir:     "../data/loader",
+			targetPath:  "pet-store.yaml",
+			expectError: false,
 		},
 		{
 			name:          "blocks parent directory traversal",
