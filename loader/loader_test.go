@@ -388,3 +388,36 @@ func requireSchema(t *testing.T, spec *model.Spec) {
 	require.Equal(t, model.GenericObject{"type": "integer", "format": "int32"}, errorSchema["properties"].(model.GenericObject)["code"])
 	require.Equal(t, model.GenericObject{"type": "string"}, errorSchema["properties"].(model.GenericObject)["message"])
 }
+
+func Test_Load_MalformedTypeAssertion(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name            string
+		rootDir         string
+		apiFileName     string
+		wantErrContains string
+		description     string
+	}{
+		{
+			name:            "should handle string value instead of object",
+			rootDir:         "../data/loader-malformed",
+			apiFileName:     "malformed-api.yml",
+			wantErrContains: "expected object for key 'schemas'",
+			description:     "Prevents panic when YAML contains string instead of object",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			spec, err := loader.LoadFromDir(tc.rootDir, tc.apiFileName)
+
+			require.Error(t, err, "Expected error for: %s", tc.description)
+			require.ErrorContains(t, err, tc.wantErrContains,
+				"Error should mention type mismatch: %s", tc.description)
+			require.Nil(t, spec, "Spec should be nil when type assertion fails")
+		})
+	}
+}

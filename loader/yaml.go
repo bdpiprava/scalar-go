@@ -100,7 +100,11 @@ func readDirRecursively(rootDir string, dir string, key string) (*model.GenericO
 		}
 
 		if content, ok := fileContent[key]; ok {
-			maps.Copy(data, content.(model.GenericObject))
+			if objContent, ok := content.(model.GenericObject); ok {
+				maps.Copy(data, objContent)
+			} else {
+				return nil, fmt.Errorf("expected object for key '%s' in file '%s', got %T", key, fileName, content)
+			}
 		} else {
 			data[strings.TrimSuffix(fileName, ext)] = fileContent
 		}
