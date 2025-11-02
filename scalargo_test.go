@@ -225,39 +225,24 @@ func Test_XSS_Prevention(t *testing.T) {
 			description: "CSS should have HTML tags stripped to prevent breaking out of style tag",
 		},
 		{
-			name: "should escape XSS in CDN URL",
-			opts: []scalargo.Option{
-				scalargo.WithSpecURL("https://example.com/api.yaml"),
-				scalargo.WithCDN("\" onerror=\"alert('CDN XSS')"),
-			},
-			shouldNotContain: []string{
-				"\" onerror=\"alert('CDN XSS')",
-				"onerror=\"alert('CDN XSS')",
-				"<script src=\"\" onerror=\"alert('CDN XSS')\">", // Must not allow attribute injection
-			},
-			description: "CDN URL should be escaped to prevent attribute injection",
-		},
-		{
-			name: "should handle multiple XSS vectors simultaneously",
+			name: "should handle multiple XSS vectors in title and CSS",
 			opts: []scalargo.Option{
 				scalargo.WithSpecURL("https://example.com/api.yaml"),
 				scalargo.WithMetaDataOpts(
 					scalargo.WithKeyValue("title", "<script>alert(1)</script>"),
 				),
 				scalargo.WithOverrideCSS("</style><img src=x onerror=alert(2)><style>body { color: blue; }"),
-				scalargo.WithCDN("javascript:alert(3)"),
 			},
 			shouldNotContain: []string{
 				"<script>alert(1)</script>",  // Title XSS should be escaped
 				"</style><img src=x onerror=alert(2)><style>",  // CSS HTML tags should be removed
 				"<img src=x onerror=alert(2)>",  // IMG tag should be removed
-				"javascript:alert(3)",  // Dangerous JS URL should be sanitized by template
 			},
 			shouldContain: []string{
 				"&lt;script&gt;alert(1)&lt;/script&gt;",  // Escaped title
 				"body { color: blue; }",  // CSS preserved, tags removed
 			},
-			description: "Should sanitize all XSS vectors when multiple are present",
+			description: "Should sanitize XSS vectors in title and CSS (CDN URL validation is tested separately)",
 		},
 		{
 			name: "should escape HTML entities in title",
@@ -276,15 +261,16 @@ func Test_XSS_Prevention(t *testing.T) {
 			description: "HTML entities should be properly escaped",
 		},
 		{
-			name: "should handle data URI XSS attempt in CDN",
+			name: "should allow valid CDN URL",
 			opts: []scalargo.Option{
 				scalargo.WithSpecURL("https://example.com/api.yaml"),
-				scalargo.WithCDN("data:text/javascript,alert('XSS')"),
+				scalargo.WithCDN("https://cdn.example.com/scalar.js"),
 			},
-			shouldNotContain: []string{
-				"<script src=\"data:text/javascript,alert('XSS')\"></script>",
+			shouldNotContain: []string{},
+			shouldContain: []string{
+				"https://cdn.example.com/scalar.js",
 			},
-			description: "Data URIs should be escaped in CDN URL",
+			description: "Valid HTTPS CDN URLs should be accepted (dangerous URLs are rejected by validation - see Test_URL_Scheme_Validation)",
 		},
 	}
 
@@ -520,6 +506,218 @@ func Test_CSS_Sanitization(t *testing.T) {
 				require.Contains(t, content.overrideCSS, safe,
 					"CSS should preserve safe content: %s\nDescription: %s\nActual CSS: %s",
 					safe, tc.description, content.overrideCSS)
+			}
+		})
+	}
+}
+
+func Test_URL_Scheme_Validation(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		opts        []scalargo.Option
+		expectError bool
+		errorMsg    string
+		description string
+	}{
+		{
+			name: "should reject javascript: scheme in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("javascript:alert(document.domain)"),
+			},
+			expectError: true,
+			errorMsg:    "invalid SpecURL: scheme must be http or https",
+			description: "JavaScript protocol should be rejected to prevent XSS",
+		},
+		{
+			name: "should reject data: scheme in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("data:text/html,<script>alert(1)</script>"),
+			},
+			expectError: true,
+			errorMsg:    "invalid SpecURL: scheme must be http or https",
+			description: "Data URI should be rejected",
+		},
+		{
+			name: "should reject file: scheme in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("file:///etc/passwd"),
+			},
+			expectError: true,
+			errorMsg:    "invalid SpecURL: scheme must be http or https",
+			description: "File protocol should be rejected to prevent local file access",
+		},
+		{
+			name: "should reject vbscript: scheme in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("vbscript:msgbox"),
+			},
+			expectError: true,
+			errorMsg:    "invalid SpecURL: scheme must be http or https",
+			description: "VBScript protocol should be rejected",
+		},
+		{
+			name: "should reject ftp: scheme in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("ftp://example.com/api.yaml"),
+			},
+			expectError: true,
+			errorMsg:    "invalid SpecURL: scheme must be http or https",
+			description: "FTP protocol should be rejected",
+		},
+		{
+			name: "should accept valid http URL in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("http://example.com/api.yaml"),
+			},
+			expectError: false,
+			description: "HTTP URLs should be allowed",
+		},
+		{
+			name: "should accept valid https URL in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml"),
+			},
+			expectError: false,
+			description: "HTTPS URLs should be allowed",
+		},
+		{
+			name: "should reject javascript: scheme in CDN",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithCDN("javascript:alert('CDN XSS')"),
+			},
+			expectError: true,
+			errorMsg:    "invalid CDN: scheme must be http or https",
+			description: "JavaScript protocol in CDN should be rejected",
+		},
+		{
+			name: "should reject data: scheme in CDN",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithCDN("data:text/javascript,alert(1)"),
+			},
+			expectError: true,
+			errorMsg:    "invalid CDN: scheme must be http or https",
+			description: "Data URI in CDN should be rejected",
+		},
+		{
+			name: "should reject file: scheme in CDN",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithCDN("file:///usr/local/malicious.js"),
+			},
+			expectError: true,
+			errorMsg:    "invalid CDN: scheme must be http or https",
+			description: "File protocol in CDN should be rejected",
+		},
+		{
+			name: "should accept valid https CDN URL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithCDN("https://cdn.jsdelivr.net/npm/@scalar/api-reference"),
+			},
+			expectError: false,
+			description: "HTTPS CDN URLs should be allowed",
+		},
+		{
+			name: "should accept valid http CDN URL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithCDN("http://localhost:8080/scalar.js"),
+			},
+			expectError: false,
+			description: "HTTP CDN URLs should be allowed (for local development)",
+		},
+		{
+			name: "should handle case-insensitive scheme validation for SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("JAVASCRIPT:alert(1)"),
+			},
+			expectError: true,
+			errorMsg:    "invalid SpecURL: scheme must be http or https",
+			description: "Uppercase schemes should also be rejected",
+		},
+		{
+			name: "should handle case-insensitive scheme validation for CDN",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithCDN("DATA:text/javascript,alert(1)"),
+			},
+			expectError: true,
+			errorMsg:    "invalid CDN: scheme must be http or https",
+			description: "Uppercase schemes in CDN should also be rejected",
+		},
+		{
+			name: "should reject protocol-relative URLs in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("//evil.com/api.yaml"),
+			},
+			expectError: true,
+			errorMsg:    "invalid SpecURL: scheme must be http or https",
+			description: "Protocol-relative URLs should be rejected (empty scheme)",
+		},
+		{
+			name: "should reject malformed URLs in SpecURL",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("ht!tp://example.com"),
+			},
+			expectError: true,
+			description: "Malformed URLs should be rejected",
+		},
+		{
+			name: "should accept URLs with ports",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com:8443/api.yaml"),
+			},
+			expectError: false,
+			description: "URLs with explicit ports should be allowed",
+		},
+		{
+			name: "should accept URLs with query parameters",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://api.example.com/spec?version=v1&format=yaml"),
+			},
+			expectError: false,
+			description: "URLs with query parameters should be allowed",
+		},
+		{
+			name: "should accept URLs with fragments",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml#section1"),
+			},
+			expectError: false,
+			description: "URLs with fragments should be allowed",
+		},
+		{
+			name: "should reject both dangerous SpecURL and CDN simultaneously",
+			opts: []scalargo.Option{
+				scalargo.WithCDN("javascript:void(0)"),
+				scalargo.WithSpecURL("data:text/html,<h1>XSS</h1>"),
+			},
+			expectError: true,
+			errorMsg:    "invalid CDN: scheme must be http or https",
+			description: "Should catch CDN validation first",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			html, err := scalargo.NewV2(tc.opts...)
+
+			if tc.expectError {
+				require.Error(t, err, "Expected error for: %s", tc.description)
+				if tc.errorMsg != "" {
+					require.ErrorContains(t, err, tc.errorMsg,
+						"Error message should contain expected text for: %s", tc.description)
+				}
+				require.Empty(t, html, "HTML should be empty when validation fails")
+			} else {
+				require.NoError(t, err, "Should not error for: %s", tc.description)
+				require.NotEmpty(t, html, "HTML should be generated for valid URLs")
 			}
 		})
 	}

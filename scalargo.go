@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -75,6 +76,29 @@ func sanitizeCSS(css string) string {
 	return sanitized
 }
 
+// validateURL validates that a URL uses a safe scheme (http or https only)
+// Returns an error if the URL is invalid or uses a dangerous scheme
+func validateURL(rawURL, fieldName string) error {
+	if strings.TrimSpace(rawURL) == "" {
+		return nil // Empty URLs are allowed (will use defaults or be omitted)
+	}
+
+	// Parse the URL
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return fmt.Errorf("invalid %s: %w", fieldName, err)
+	}
+
+	// Check that scheme is http or https only
+	// This prevents javascript:, data:, file:, vbscript:, and other dangerous schemes
+	scheme := strings.ToLower(parsedURL.Scheme)
+	if scheme != "http" && scheme != "https" {
+		return fmt.Errorf("invalid %s: scheme must be http or https, got %q", fieldName, parsedURL.Scheme)
+	}
+
+	return nil
+}
+
 // New generates the HTML for the Scalar UI
 func New(apiFilesDir string, opts ...Option) (string, error) {
 	return NewV2(append(opts, WithSpecDir(apiFilesDir))...)
@@ -83,6 +107,12 @@ func New(apiFilesDir string, opts ...Option) (string, error) {
 // NewV2 generate the HTML for the Scalar UI
 func NewV2(opts ...Option) (string, error) {
 	options := buildOptions(opts...)
+
+	// Validate CDN URL to prevent XSS via dangerous URL schemes
+	if err := validateURL(options.CDN, "CDN"); err != nil {
+		return "", err
+	}
+
 	specScript, err := options.GetSpecScript()
 	if err != nil {
 		return "", err
@@ -167,6 +197,11 @@ func (o *Options) GetSpecScript() (string, error) {
 	configJSON := strings.ReplaceAll(string(configAsBytes), `"`, `&quot;`)
 
 	if strings.TrimSpace(o.SpecURL) != "" {
+		// Validate SpecURL to prevent XSS via dangerous URL schemes
+		if err := validateURL(o.SpecURL, "SpecURL"); err != nil {
+			return "", err
+		}
+
 		return fmt.Sprintf(
 			`<script id="api-reference" data-url="%s" data-configuration="%s"></script>`,
 			o.SpecURL,
