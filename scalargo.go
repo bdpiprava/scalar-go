@@ -232,8 +232,16 @@ func (o *Options) BuildInitScript() (string, error) {
 	), nil
 }
 
-// GetSpecScript prepares and returns the spec script, prioritizing SpecURL, then SpecDirectory, then SpecBytes
+// GetSpecScript prepares and returns the spec script, routing to appropriate method based on RenderMode
 func (o *Options) GetSpecScript() (string, error) {
+	if o.RenderMode == RenderModeJavaScriptAPI {
+		return o.BuildInitScript()
+	}
+	return o.buildDataAttributeScript()
+}
+
+// buildDataAttributeScript generates the data-attribute script (legacy mode)
+func (o *Options) buildDataAttributeScript() (string, error) {
 	configAsBytes, err := json.Marshal(o.Configurations)
 	if err != nil {
 		return "", err
