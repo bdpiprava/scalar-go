@@ -263,6 +263,8 @@ func Test_validatePath_DirectTests(t *testing.T) {
 }
 
 func Test_LoadFromBytes(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		name     string
 		filePath string
@@ -279,6 +281,8 @@ func Test_LoadFromBytes(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
 			content, err := os.ReadFile(tc.filePath)
 			require.NoError(t, err)
 
@@ -291,6 +295,71 @@ func Test_LoadFromBytes(t *testing.T) {
 				requireBase(t, spec)
 				requireSchema(t, spec)
 				requirePaths(t, spec)
+			}
+		})
+	}
+}
+
+func Test_LoadFromBytes_JSONFallback(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name            string
+		input           []byte
+		wantErr         bool
+		wantErrContains string
+		description     string
+	}{
+		{
+			name:        "should parse valid JSON when YAML parsing fails",
+			input:       []byte(`{"openapi":"3.0.0","info":{"title":"Test API","version":"1.0.0"},"paths":{}}`),
+			wantErr:     false,
+			description: "Valid JSON should be parsed via JSON fallback",
+		},
+		{
+			name:        "should parse pure JSON spec",
+			input:       []byte(`{"openapi":"3.1.0","info":{"title":"Pure JSON","version":"2.0.0"},"paths":{},"components":{}}`),
+			wantErr:     false,
+			description: "Pure JSON spec should work",
+		},
+		{
+			name:            "should fail when both YAML and JSON parsing fail",
+			input:           []byte(`this is not valid yaml or json {]`),
+			wantErr:         true,
+			wantErrContains: "failed to parse as YAML or JSON",
+			description:     "Invalid content should error",
+		},
+		{
+			name:            "should fail on malformed JSON",
+			input:           []byte(`{"openapi":"3.0.0","info":{"title":"Broken",,}}`),
+			wantErr:         true,
+			wantErrContains: "failed to parse as YAML or JSON",
+			description:     "Malformed JSON should error",
+		},
+		{
+			name:        "should handle empty JSON object",
+			input:       []byte(`{}`),
+			wantErr:     false,
+			description: "Empty JSON object should be accepted",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			spec, err := loader.LoadFromBytes(tc.input)
+
+			if tc.wantErr {
+				require.Error(t, err, "Expected error for: %s", tc.description)
+				if tc.wantErrContains != "" {
+					require.ErrorContains(t, err, tc.wantErrContains,
+						"Error should contain expected message: %s", tc.description)
+				}
+				require.Nil(t, spec)
+			} else {
+				require.NoError(t, err, "Should not error for: %s", tc.description)
+				require.NotNil(t, spec)
 			}
 		})
 	}
@@ -418,6 +487,130 @@ func Test_Load_MalformedTypeAssertion(t *testing.T) {
 			require.ErrorContains(t, err, tc.wantErrContains,
 				"Error should mention type mismatch: %s", tc.description)
 			require.Nil(t, spec, "Spec should be nil when type assertion fails")
+		})
+	}
+}
+
+func Test_Load_WrapperFunction(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		rootDir string
+		wantErr bool
+	}{
+		{
+			name:    "should load from directory with api.yaml",
+			rootDir: "../data/loader-multiple-files",
+			wantErr: false,
+		},
+		{
+			name:    "should return error when api.yaml does not exist",
+			rootDir: "../data/loader",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			spec, err := loader.Load(tc.rootDir)
+
+			if tc.wantErr {
+				require.Error(t, err)
+				require.Nil(t, spec)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, spec)
+				requireBase(t, spec)
+				requireSchema(t, spec)
+				requirePaths(t, spec)
+			}
+		})
+	}
+}
+
+func Test_LoadWithName_WrapperFunction(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name        string
+		rootDir     string
+		apiFileName string
+		wantErr     bool
+	}{
+		{
+			name:        "should load YAML file by name",
+			rootDir:     "../data/loader",
+			apiFileName: "pet-store.yml",
+			wantErr:     false,
+		},
+		{
+			name:        "should load JSON file by name",
+			rootDir:     "../data/loader",
+			apiFileName: "pet-store.json",
+			wantErr:     false,
+		},
+		{
+			name:        "should return error for non-existent file",
+			rootDir:     "../data/loader",
+			apiFileName: "does-not-exist.yaml",
+			wantErr:     true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			spec, err := loader.LoadWithName(tc.rootDir, tc.apiFileName)
+
+			if tc.wantErr {
+				require.Error(t, err)
+				require.Nil(t, spec)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, spec)
+			}
+		})
+	}
+}
+
+func Test_LoadFromDirRoot_WrapperFunction(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		rootDir string
+		wantErr bool
+	}{
+		{
+			name:    "should load api.yaml from root directory",
+			rootDir: "../data/loader-multiple-files",
+			wantErr: false,
+		},
+		{
+			name:    "should return error when api.yaml does not exist",
+			rootDir: "../data/loader",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			spec, err := loader.LoadFromDirRoot(tc.rootDir)
+
+			if tc.wantErr {
+				require.Error(t, err)
+				require.Nil(t, spec)
+			} else {
+				require.NoError(t, err)
+				require.NotNil(t, spec)
+				requireBase(t, spec)
+			}
 		})
 	}
 }

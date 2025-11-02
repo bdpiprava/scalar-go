@@ -560,3 +560,153 @@ func TestWithSpecBytes(t *testing.T) {
 		})
 	}
 }
+
+func TestWithHTTPBasicAuth(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		username string
+		password string
+	}{
+		{
+			name:     "should set HTTP Basic Auth credentials",
+			username: "admin",
+			password: "secret123",
+		},
+		{
+			name:     "should set HTTP Basic Auth with empty username",
+			username: "",
+			password: "password",
+		},
+		{
+			name:     "should set HTTP Basic Auth with empty password",
+			username: "user",
+			password: "",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			auth := make(scalargo.AuthenticationOption)
+			scalargo.WithHTTPBasicAuth(tc.username, tc.password)(auth)
+
+			schemes, ok := auth["securitySchemes"].(map[string]any)
+			assert.True(t, ok, "securitySchemes should exist and be a map")
+
+			httpBasic, ok := schemes["httpBasic"].(map[string]any)
+			assert.True(t, ok, "httpBasic scheme should exist")
+			assert.Equal(t, tc.username, httpBasic["username"])
+			assert.Equal(t, tc.password, httpBasic["password"])
+		})
+	}
+}
+
+func TestWithHTTPBasicAuth_InitializesSecuritySchemes(t *testing.T) {
+	t.Parallel()
+
+	auth := make(scalargo.AuthenticationOption)
+	assert.Nil(t, auth["securitySchemes"], "securitySchemes should be nil initially")
+
+	scalargo.WithHTTPBasicAuth("user", "pass")(auth)
+
+	assert.NotNil(t, auth["securitySchemes"], "securitySchemes should be initialized")
+}
+
+func TestWithAPIKey(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		token string
+	}{
+		{
+			name:  "should set API key token",
+			token: "sk-1234567890abcdef",
+		},
+		{
+			name:  "should set empty API key token",
+			token: "",
+		},
+		{
+			name:  "should set API key with special characters",
+			token: "key!@#$%^&*()",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			auth := make(scalargo.AuthenticationOption)
+			scalargo.WithAPIKey(tc.token)(auth)
+
+			apiKey, ok := auth["apiKey"].(map[string]any)
+			assert.True(t, ok, "apiKey should exist and be a map")
+			assert.Equal(t, tc.token, apiKey["token"])
+		})
+	}
+}
+
+func TestWithServers(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		servers []scalargo.ServerOverride
+		want    []scalargo.ServerOverride
+	}{
+		{
+			name: "should set single server override",
+			servers: []scalargo.ServerOverride{
+				{URL: "https://api.example.com", Description: "Production server"},
+			},
+			want: []scalargo.ServerOverride{
+				{URL: "https://api.example.com", Description: "Production server"},
+			},
+		},
+		{
+			name: "should set multiple server overrides",
+			servers: []scalargo.ServerOverride{
+				{URL: "https://api.example.com", Description: "Production"},
+				{URL: "https://staging.example.com", Description: "Staging"},
+				{URL: "http://localhost:8080", Description: "Development"},
+			},
+			want: []scalargo.ServerOverride{
+				{URL: "https://api.example.com", Description: "Production"},
+				{URL: "https://staging.example.com", Description: "Staging"},
+				{URL: "http://localhost:8080", Description: "Development"},
+			},
+		},
+		{
+			name:    "should set empty servers slice",
+			servers: []scalargo.ServerOverride{},
+			want:    []scalargo.ServerOverride{},
+		},
+		{
+			name: "should set server with empty description",
+			servers: []scalargo.ServerOverride{
+				{URL: "https://api.example.com", Description: ""},
+			},
+			want: []scalargo.ServerOverride{
+				{URL: "https://api.example.com", Description: ""},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			opts := &scalargo.Options{
+				Configurations: make(map[string]any),
+			}
+			scalargo.WithServers(tc.servers...)(opts)
+
+			got := opts.Configurations["servers"]
+			assert.Equal(t, tc.want, got)
+		})
+	}
+}
