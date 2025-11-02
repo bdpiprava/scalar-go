@@ -25,11 +25,17 @@ func WithPreferredSecurityScheme(schemes ...any) AuthOption {
 // WithHTTPBasicAuth sets the HTTP Basic Auth options
 func WithHTTPBasicAuth(username, password string) AuthOption {
 	return func(o AuthenticationOption) {
-		o["http"] = map[string]any{
-			"basic": map[string]any{
+		// Initialize securitySchemes if it doesn't exist
+		if o["securitySchemes"] == nil {
+			o["securitySchemes"] = make(map[string]any)
+		}
+
+		// Type assert and add httpBasic scheme
+		if schemes, ok := o["securitySchemes"].(map[string]any); ok {
+			schemes["httpBasic"] = map[string]any{
 				"username": username,
 				"password": password,
-			},
+			}
 		}
 	}
 }
@@ -37,10 +43,16 @@ func WithHTTPBasicAuth(username, password string) AuthOption {
 // WithHTTPBearerToken sets the HTTP Bearer Token options
 func WithHTTPBearerToken(token string) AuthOption {
 	return func(o AuthenticationOption) {
-		o["http"] = map[string]any{
-			"bearer": map[string]any{
+		// Initialize securitySchemes if it doesn't exist
+		if o["securitySchemes"] == nil {
+			o["securitySchemes"] = make(map[string]any)
+		}
+
+		// Type assert and add httpBearer scheme
+		if schemes, ok := o["securitySchemes"].(map[string]any); ok {
+			schemes["httpBearer"] = map[string]any{
 				"token": token,
-			},
+			}
 		}
 	}
 }

@@ -85,8 +85,47 @@ func Test_NewV2(t *testing.T) {
 					"layout":         string(scalargo.LayoutModern),
 					"theme":          string(scalargo.ThemeDefault),
 					"metadata":       map[string]any{"title": "API Reference"},
-					"authentication": `{"customSecurity":true,"http":{"bearer":{"token":"this-is-a-token"}},"preferredSecurityScheme":["bearerAuth"]}`,
+					"authentication": `{"customSecurity":true,"preferredSecurityScheme":["bearerAuth"],"securitySchemes":{"httpBearer":{"token":"this-is-a-token"}}}`,
 				}, got.configuration)
+			},
+		},
+		{
+			name: "should render html with multiple authentication methods without conflicts",
+			inputOpts: []scalargo.Option{
+				scalargo.WithSpecURL(specURL),
+				scalargo.WithAuthenticationOpts(
+					scalargo.WithPreferredSecurityScheme("httpBearer", "httpBasic"),
+					scalargo.WithHTTPBasicAuth("admin", "secret123"),
+					scalargo.WithHTTPBearerToken("bearer-token-here"),
+				),
+			},
+			asserter: func(t *testing.T, got html) {
+				// Parse the authentication JSON to verify structure
+				var auth map[string]any
+				authStr, ok := got.configuration["authentication"].(string)
+				require.True(t, ok, "authentication should be a string")
+				err := json.Unmarshal([]byte(authStr), &auth)
+				require.NoError(t, err, "authentication should be valid JSON")
+
+				// Verify both auth methods are present in securitySchemes
+				schemes, ok := auth["securitySchemes"].(map[string]any)
+				require.True(t, ok, "securitySchemes should exist")
+
+				// Verify httpBearer config
+				bearer, ok := schemes["httpBearer"].(map[string]any)
+				require.True(t, ok, "httpBearer scheme should exist")
+				require.Equal(t, "bearer-token-here", bearer["token"])
+
+				// Verify httpBasic config
+				basic, ok := schemes["httpBasic"].(map[string]any)
+				require.True(t, ok, "httpBasic scheme should exist")
+				require.Equal(t, "admin", basic["username"])
+				require.Equal(t, "secret123", basic["password"])
+
+				// Verify preferredSecurityScheme includes both
+				preferred, ok := auth["preferredSecurityScheme"].([]any)
+				require.True(t, ok, "preferredSecurityScheme should be an array")
+				require.Len(t, preferred, 2, "should have both auth methods in preferredSecurityScheme")
 			},
 		},
 		{
