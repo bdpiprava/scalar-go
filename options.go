@@ -2,8 +2,6 @@ package scalargo
 
 import (
 	"encoding/json"
-	"fmt"
-	"strings"
 
 	"github.com/bdpiprava/scalar-go/model"
 )
@@ -123,10 +121,12 @@ func WithHiddenClients(hiddenClients ...string) func(*Options) {
 	return func(o *Options) {
 		value := o.Configurations[keyHiddenClients]
 
-		// WithHideAllClients() takes precedence over this
-		if strings.ToLower(fmt.Sprintf("%v", value)) != "true" {
-			o.Configurations[keyHiddenClients] = hiddenClients
+		// Return if value is set to true, as WithHideAllClients() takes precedence over this
+		if val, ok := value.(bool); ok && val {
+			return
 		}
+
+		o.Configurations[keyHiddenClients] = hiddenClients
 	}
 }
 
