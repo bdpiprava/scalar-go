@@ -155,6 +155,83 @@ func renderHTML(title, cssOverride, specScript, cdn string) string {
 	return buf.String()
 }
 
+// BuildInitScript generates JavaScript initialization code for JavaScript API mode
+// Returns: Scalar.createApiReference('#api-reference', {config});
+func (o *Options) BuildInitScript() (string, error) {
+	// Build configuration object
+	config := make(map[string]any)
+
+	// Copy all configurations
+	for k, v := range o.Configurations {
+		config[k] = v
+	}
+
+	// Handle spec source
+	if strings.TrimSpace(o.SpecURL) != "" {
+		// Validate SpecURL to prevent XSS via dangerous URL schemes
+		if err := validateURL(o.SpecURL, "SpecURL"); err != nil {
+			return "", err
+		}
+		config["url"] = o.SpecURL
+	} else {
+		// Load spec from directory or bytes
+		var spec *model.Spec
+		var err error
+
+		switch {
+		case o.SpecDirectory != "":
+			spec, err = loader.LoadFromDir(o.SpecDirectory, o.BaseFileName)
+			if err != nil {
+				return "", err
+			}
+		case o.SpecBytes != nil:
+			spec, err = loader.LoadFromBytes(o.SpecBytes)
+			if err != nil {
+				return "", err
+			}
+		default:
+			return "", fmt.Errorf("one of SpecURL, SpecDirectory or SpecBytes must be configured")
+		}
+
+		// Apply spec modifier if provided
+		if o.SpecModifier != nil {
+			spec = o.SpecModifier(spec)
+		}
+
+		// Update metadata title from spec if needed
+		metadata, ok := config[keyMetaData].(MetaData)
+		if !ok {
+			metadata = MetaData{}
+			config[keyMetaData] = metadata
+		}
+
+		if title, ok := metadata["title"]; !ok || title == defaultTitle {
+			metadata["title"] = spec.Info.Title
+			config[keyMetaData] = metadata
+		}
+
+		// Marshal spec to JSON
+		content, err := json.Marshal(spec)
+		if err != nil {
+			return "", err
+		}
+
+		config["content"] = string(content)
+	}
+
+	// Marshal config to JSON
+	configJSON, err := json.Marshal(config)
+	if err != nil {
+		return "", err
+	}
+
+	// Generate JavaScript initialization code
+	return fmt.Sprintf(
+		"Scalar.createApiReference('#api-reference', %s);",
+		string(configJSON),
+	), nil
+}
+
 // GetSpecScript prepares and returns the spec script, prioritizing SpecURL, then SpecDirectory, then SpecBytes
 func (o *Options) GetSpecScript() (string, error) {
 	configAsBytes, err := json.Marshal(o.Configurations)
