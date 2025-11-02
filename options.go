@@ -63,6 +63,8 @@ type Options struct {
 	SpecURL        string
 	SpecBytes      []byte
 	RenderMode     RenderMode
+	CustomHeadJS   string // Custom JavaScript to inject in <head> before Scalar CDN script
+	CustomBodyJS   string // Custom JavaScript to inject in <body> after Scalar initialization
 }
 
 type Option func(*Options)
@@ -247,5 +249,21 @@ func WithAuthenticationOpts(opts ...AuthOption) func(*Options) {
 func WithRenderMode(mode RenderMode) func(*Options) {
 	return func(o *Options) {
 		o.RenderMode = mode
+	}
+}
+
+// WithCustomHeadJS injects custom JavaScript in the <head> before the Scalar CDN script
+// Note: User is responsible for XSS prevention in custom JS
+func WithCustomHeadJS(js string) func(*Options) {
+	return func(o *Options) {
+		o.CustomHeadJS = js
+	}
+}
+
+// WithCustomBodyJS injects custom JavaScript in the <body> after Scalar initialization
+// Note: User is responsible for XSS prevention in custom JS
+func WithCustomBodyJS(js string) func(*Options) {
+	return func(o *Options) {
+		o.CustomBodyJS = js
 	}
 }
