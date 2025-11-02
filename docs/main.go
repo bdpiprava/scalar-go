@@ -54,7 +54,7 @@ func exampleForSpecURLAndMetadataUsage() (string, error) {
 func exampleForServersOverride() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecURL("https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml"),
-		scalargo.WithServers(scalargo.Server{
+		scalargo.WithServers(scalargo.ServerOverride{
 			URL:         "http://localhost:8080",
 			Description: "Example server",
 		}),

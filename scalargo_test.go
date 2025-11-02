@@ -222,12 +222,12 @@ func Test_XSS_Prevention(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name              string
-		opts              []scalargo.Option
-		maliciousContent  string
-		shouldNotContain  []string // XSS payloads that should be escaped
-		shouldContain     []string // Expected escaped versions
-		description       string
+		name             string
+		opts             []scalargo.Option
+		maliciousContent string
+		shouldNotContain []string // XSS payloads that should be escaped
+		shouldContain    []string // Expected escaped versions
+		description      string
 	}{
 		{
 			name: "should escape XSS in title tag",
@@ -253,12 +253,12 @@ func Test_XSS_Prevention(t *testing.T) {
 				scalargo.WithOverrideCSS("</style><script>alert('CSS XSS')</script><style>body { color: red; }"),
 			},
 			shouldNotContain: []string{
-				"<script>alert('CSS XSS')</script>",                                    // Script tag should be removed
-				"</style><script>",                                                    // Must not allow breaking out of style
-				"<style></style>",                                                     // Empty style tags from injection
+				"<script>alert('CSS XSS')</script>", // Script tag should be removed
+				"</style><script>",                  // Must not allow breaking out of style
+				"<style></style>",                   // Empty style tags from injection
 			},
 			shouldContain: []string{
-				"body { color: red; }",                                               // Valid CSS preserved
+				"body { color: red; }", // Valid CSS preserved
 				// Note: "alert('CSS XSS')" text remains but is harmless - it's invalid CSS that browsers ignore
 			},
 			description: "CSS should have HTML tags stripped to prevent breaking out of style tag",
@@ -273,13 +273,13 @@ func Test_XSS_Prevention(t *testing.T) {
 				scalargo.WithOverrideCSS("</style><img src=x onerror=alert(2)><style>body { color: blue; }"),
 			},
 			shouldNotContain: []string{
-				"<script>alert(1)</script>",  // Title XSS should be escaped
-				"</style><img src=x onerror=alert(2)><style>",  // CSS HTML tags should be removed
-				"<img src=x onerror=alert(2)>",  // IMG tag should be removed
+				"<script>alert(1)</script>",                   // Title XSS should be escaped
+				"</style><img src=x onerror=alert(2)><style>", // CSS HTML tags should be removed
+				"<img src=x onerror=alert(2)>",                // IMG tag should be removed
 			},
 			shouldContain: []string{
-				"&lt;script&gt;alert(1)&lt;/script&gt;",  // Escaped title
-				"body { color: blue; }",  // CSS preserved, tags removed
+				"&lt;script&gt;alert(1)&lt;/script&gt;", // Escaped title
+				"body { color: blue; }",                 // CSS preserved, tags removed
 			},
 			description: "Should sanitize XSS vectors in title and CSS (CDN URL validation is tested separately)",
 		},
@@ -488,8 +488,8 @@ func Test_CSS_Sanitization(t *testing.T) {
 			description: "Should handle case-insensitive attack patterns",
 		},
 		{
-			name:         "Safe CSS should be preserved",
-			maliciousCSS: "body { color: #fff; margin: 0; padding: 10px; } .container { display: flex; background: url('/images/bg.png'); }",
+			name:             "Safe CSS should be preserved",
+			maliciousCSS:     "body { color: #fff; margin: 0; padding: 10px; } .container { display: flex; background: url('/images/bg.png'); }",
 			shouldNotContain: []string{
 				// Nothing dangerous here
 			},
@@ -503,8 +503,8 @@ func Test_CSS_Sanitization(t *testing.T) {
 			description: "Should preserve legitimate CSS including safe relative URLs",
 		},
 		{
-			name:         "Empty CSS should remain empty",
-			maliciousCSS: "",
+			name:             "Empty CSS should remain empty",
+			maliciousCSS:     "",
 			shouldNotContain: []string{},
 			shouldContain:    []string{},
 			description:      "Empty CSS should not cause issues",
