@@ -81,6 +81,7 @@ func buildOptions(opts ...Option) *Options {
 
 		CDN:          DefaultCDN,
 		BaseFileName: "api.yaml",
+		RenderMode:   RenderModeDataAttribute, // Default to data-attribute for backward compatibility
 	}
 
 	for _, opt := range opts {

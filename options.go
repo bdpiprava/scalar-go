@@ -33,6 +33,16 @@ const (
 // SpecModifier is a function that can be used to override the spec
 type SpecModifier func(spec *model.Spec) *model.Spec
 
+// RenderMode defines how Scalar initializes in the HTML output
+type RenderMode string
+
+const (
+	// RenderModeDataAttribute uses data attributes on script tag (legacy, default for backward compatibility)
+	RenderModeDataAttribute RenderMode = "data-attribute"
+	// RenderModeJavaScriptAPI uses Scalar.createApiReference() JavaScript API (recommended)
+	RenderModeJavaScriptAPI RenderMode = "javascript-api"
+)
+
 type Options struct {
 	Configurations map[string]any
 	OverrideCSS    string
@@ -42,6 +52,7 @@ type Options struct {
 	SpecDirectory  string
 	SpecURL        string
 	SpecBytes      []byte
+	RenderMode     RenderMode
 }
 
 type Option func(*Options)
@@ -219,5 +230,12 @@ func WithAuthenticationOpts(opts ...AuthOption) func(*Options) {
 		if err == nil {
 			o.Configurations[keyAuthentication] = string(content)
 		}
+	}
+}
+
+// WithRenderMode sets the rendering mode for the Scalar UI
+func WithRenderMode(mode RenderMode) func(*Options) {
+	return func(o *Options) {
+		o.RenderMode = mode
 	}
 }
