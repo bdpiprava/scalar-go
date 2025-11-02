@@ -13,9 +13,9 @@ func TestDocumentedPaths(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name  string
-		spec  model.Spec
-		want  []model.DocumentedPath
+		name string
+		spec model.Spec
+		want []model.DocumentedPath
 	}{
 		{
 			name: "should return documented paths with methods",
@@ -104,7 +104,7 @@ func TestDocumentedPaths(t *testing.T) {
 				return tc.want[i].Path < tc.want[j].Path
 			})
 
-			require.Equal(t, len(tc.want), len(got))
+			require.Len(t, got, len(tc.want))
 			for i := range tc.want {
 				assert.Equal(t, tc.want[i], got[i])
 			}

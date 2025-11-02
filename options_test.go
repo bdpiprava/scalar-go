@@ -11,8 +11,8 @@ func TestWithHiddenClients(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name           string
-		options        []scalargo.Option
+		name              string
+		options           []scalargo.Option
 		wantHiddenClients any
 	}{
 		{

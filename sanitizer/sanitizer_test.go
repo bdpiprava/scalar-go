@@ -13,8 +13,8 @@ func TestSanitize(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name string
-		input *model.Spec
+		name     string
+		input    *model.Spec
 		validate func(t *testing.T, got *model.Spec)
 	}{
 		{
@@ -130,9 +130,9 @@ func TestSanitize(t *testing.T) {
 				assert.NotNil(t, got.Components.Schemas)
 				assert.NotNil(t, got.Components.Parameters)
 				assert.NotNil(t, got.Paths)
-				assert.Len(t, got.Components.Schemas, 0)
-				assert.Len(t, got.Components.Parameters, 0)
-				assert.Len(t, got.Paths, 0)
+				assert.Empty(t, got.Components.Schemas)
+				assert.Empty(t, got.Components.Parameters)
+				assert.Empty(t, got.Paths)
 			},
 		},
 		{
@@ -164,10 +164,10 @@ func TestSanitize(t *testing.T) {
 				Components: model.Components{
 					Parameters: map[string]any{
 						"limitParam": map[any]any{
-							"name":        "limit",
-							"in":          "query",
-							"required":    false,
-							"schema":      map[any]any{"type": "integer"},
+							"name":     "limit",
+							"in":       "query",
+							"required": false,
+							"schema":   map[any]any{"type": "integer"},
 						},
 					},
 				},
@@ -315,7 +315,7 @@ func TestSanitize_ComplexRealWorldScenario(t *testing.T) {
 		Components: model.Components{
 			Schemas: map[string]any{
 				"User": map[any]any{
-					"type": "object",
+					"type":     "object",
 					"required": []any{"id", "name"},
 					"properties": map[any]any{
 						"id": map[any]any{

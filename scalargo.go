@@ -25,8 +25,10 @@ func NewV2(opts ...Option) (string, error) {
 		return "", err
 	}
 
+	title := extractTitle(options.Configurations, defaultTitle)
+
 	return renderHTML(
-		fmt.Sprintf("%v", options.Configurations[keyMetaData].(MetaData)["title"]),
+		title,
 		options.OverrideCSS,
 		specScript,
 		options.CDN,
@@ -109,7 +111,12 @@ func (o *Options) GetSpecScript() (string, error) {
 		spec = o.SpecModifier(spec)
 	}
 
-	metadata := o.Configurations[keyMetaData].(MetaData)
+	metadata, ok := o.Configurations[keyMetaData].(MetaData)
+	if !ok {
+		metadata = MetaData{}
+		o.Configurations[keyMetaData] = metadata
+	}
+
 	if title, ok := metadata["title"]; !ok || title == defaultTitle {
 		metadata["title"] = spec.Info.Title
 	}
@@ -124,4 +131,14 @@ func (o *Options) GetSpecScript() (string, error) {
 		configJSON,
 		string(content),
 	), nil
+}
+
+// extractTitle safely extracts the title from metadata with fallback to default
+func extractTitle(configurations map[string]any, fallback string) string {
+	if metadata, ok := configurations[keyMetaData].(MetaData); ok {
+		if titleVal, exists := metadata["title"]; exists {
+			return fmt.Sprintf("%v", titleVal)
+		}
+	}
+	return fallback
 }

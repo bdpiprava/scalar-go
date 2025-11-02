@@ -11,7 +11,7 @@ const (
 	ClientGuzzle       = "guzzle"
 	ClientHTTP1        = "http1.1"
 	ClientHTTPClient   = "httpclient"
-	ClientHttp2        = "http2"
+	ClientHTTP2        = "http2"
 	ClientHttpie       = "httpie"
 	ClientHttr         = "httr"
 	ClientJquery       = "jquery"

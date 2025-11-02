@@ -178,3 +178,250 @@ func getFirstGroup(matcher *regexp.Regexp, content string) string {
 	}
 	return ""
 }
+
+// Helper function to safely call NewV2 and validate result without panics
+func assertNewV2NoPanic(t *testing.T, opts []scalargo.Option, wantTitle string, wantErr bool) {
+	t.Helper()
+
+	var html string
+	var err error
+	require.NotPanics(t, func() {
+		html, err = scalargo.NewV2(opts...)
+	})
+
+	if wantErr {
+		require.Error(t, err)
+	} else {
+		require.NoError(t, err)
+		require.Contains(t, html, "<title>"+wantTitle+"</title>")
+	}
+}
+
+// Helper function to safely call GetSpecScript and validate metadata without panics
+func assertGetSpecScriptNoPanic(t *testing.T, opts *scalargo.Options, wantErr bool, validateTitle bool, expectedTitle string) {
+	t.Helper()
+
+	var script string
+	var err error
+	require.NotPanics(t, func() {
+		script, err = opts.GetSpecScript()
+	})
+
+	if wantErr {
+		require.Error(t, err)
+	} else {
+		require.NoError(t, err)
+		require.NotEmpty(t, script)
+
+		if validateTitle {
+			// Verify the metadata was properly set/fixed
+			metadata, ok := opts.Configurations["metadata"].(scalargo.MetaData)
+			require.True(t, ok, "metadata should be of type MetaData")
+			require.Equal(t, expectedTitle, metadata["title"])
+		}
+	}
+}
+
+func Test_NewV2_WithCorruptedMetadata(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name      string
+		opts      []scalargo.Option
+		wantTitle string
+		wantErr   bool
+	}{
+		{
+			name: "should handle missing metadata gracefully",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				func(o *scalargo.Options) {
+					// Intentionally remove metadata after defaults are set
+					delete(o.Configurations, "metadata")
+				},
+			},
+			wantTitle: "API Reference", // Should fall back to default
+			wantErr:   false,
+		},
+		{
+			name: "should handle wrong type for metadata",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				func(o *scalargo.Options) {
+					// Set metadata to wrong type after defaults
+					o.Configurations["metadata"] = "not-a-map"
+				},
+			},
+			wantTitle: "API Reference", // Should fall back to default
+			wantErr:   false,
+		},
+		{
+			name: "should handle metadata without title",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				scalargo.WithMetaDataOpts(scalargo.WithKeyValue("description", "Some description")),
+				func(o *scalargo.Options) {
+					// Remove title from metadata
+					if metadata, ok := o.Configurations["metadata"].(scalargo.MetaData); ok {
+						delete(metadata, "title")
+					}
+				},
+			},
+			wantTitle: "API Reference", // Should fall back to default
+			wantErr:   false,
+		},
+		{
+			name: "should handle numeric value for metadata",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				func(o *scalargo.Options) {
+					o.Configurations["metadata"] = 12345
+				},
+			},
+			wantTitle: "API Reference",
+			wantErr:   false,
+		},
+		{
+			name: "should handle nil metadata",
+			opts: []scalargo.Option{
+				scalargo.WithSpecURL("https://example.com/api.yaml"),
+				func(o *scalargo.Options) {
+					o.Configurations["metadata"] = nil
+				},
+			},
+			wantTitle: "API Reference",
+			wantErr:   false,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			assertNewV2NoPanic(t, tc.opts, tc.wantTitle, tc.wantErr)
+		})
+	}
+}
+
+func Test_GetSpecScript_WithCorruptedMetadata(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name          string
+		setupOpts     func() *scalargo.Options
+		wantErr       bool
+		validateTitle bool
+		expectedTitle string
+	}{
+		{
+			name: "should handle missing metadata when using spec directory",
+			setupOpts: func() *scalargo.Options {
+				opts := &scalargo.Options{
+					Configurations: make(map[string]any),
+					SpecDirectory:  "./data/loader",
+					BaseFileName:   "pet-store.yml",
+					CDN:            scalargo.DefaultCDN,
+				}
+				// Intentionally don't set metadata
+				return opts
+			},
+			wantErr:       false,
+			validateTitle: true,
+			expectedTitle: "Swagger Petstore", // Should use spec title
+		},
+		{
+			name: "should handle wrong type for metadata when using spec directory",
+			setupOpts: func() *scalargo.Options {
+				opts := &scalargo.Options{
+					Configurations: make(map[string]any),
+					SpecDirectory:  "./data/loader",
+					BaseFileName:   "pet-store.yml",
+					CDN:            scalargo.DefaultCDN,
+				}
+				// Set metadata to wrong type
+				opts.Configurations["metadata"] = 12345
+				return opts
+			},
+			wantErr:       false,
+			validateTitle: true,
+			expectedTitle: "Swagger Petstore", // Should create new metadata and use spec title
+		},
+		{
+			name: "should handle nil metadata when using spec directory",
+			setupOpts: func() *scalargo.Options {
+				opts := &scalargo.Options{
+					Configurations: make(map[string]any),
+					SpecDirectory:  "./data/loader",
+					BaseFileName:   "pet-store.yml",
+					CDN:            scalargo.DefaultCDN,
+				}
+				opts.Configurations["metadata"] = nil
+				return opts
+			},
+			wantErr:       false,
+			validateTitle: true,
+			expectedTitle: "Swagger Petstore",
+		},
+		{
+			name: "should handle string metadata when using spec directory",
+			setupOpts: func() *scalargo.Options {
+				opts := &scalargo.Options{
+					Configurations: make(map[string]any),
+					SpecDirectory:  "./data/loader",
+					BaseFileName:   "pet-store.yml",
+					CDN:            scalargo.DefaultCDN,
+				}
+				opts.Configurations["metadata"] = "invalid-string"
+				return opts
+			},
+			wantErr:       false,
+			validateTitle: true,
+			expectedTitle: "Swagger Petstore",
+		},
+		{
+			name: "should handle metadata with default title when using spec directory",
+			setupOpts: func() *scalargo.Options {
+				opts := &scalargo.Options{
+					Configurations: map[string]any{
+						"metadata": scalargo.MetaData{
+							"title": "API Reference", // Default title
+						},
+					},
+					SpecDirectory: "./data/loader",
+					BaseFileName:  "pet-store.yml",
+					CDN:           scalargo.DefaultCDN,
+				}
+				return opts
+			},
+			wantErr:       false,
+			validateTitle: true,
+			expectedTitle: "Swagger Petstore", // Should replace default with spec title
+		},
+		{
+			name: "should preserve custom title when using spec directory",
+			setupOpts: func() *scalargo.Options {
+				opts := &scalargo.Options{
+					Configurations: map[string]any{
+						"metadata": scalargo.MetaData{
+							"title": "Custom Title",
+						},
+					},
+					SpecDirectory: "./data/loader",
+					BaseFileName:  "pet-store.yml",
+					CDN:           scalargo.DefaultCDN,
+				}
+				return opts
+			},
+			wantErr:       false,
+			validateTitle: true,
+			expectedTitle: "Custom Title", // Should preserve custom title
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			opts := tc.setupOpts()
+			assertGetSpecScriptNoPanic(t, opts, tc.wantErr, tc.validateTitle, tc.expectedTitle)
+		})
+	}
+}
