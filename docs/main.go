@@ -22,10 +22,13 @@ import (
 const serverTimeout = 3 * time.Second
 
 type Example struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Code        string `json:"code"`
-	Output      string `json:"output"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	Code         string `json:"code"`
+	Output       string `json:"output"`
+	Category     string `json:"category,omitempty"`
+	CategoryIcon string `json:"categoryIcon,omitempty"`
+	Icon         string `json:"icon,omitempty"`
 }
 
 const loadFromManyFiles = "./data/loader-multiple-files"
@@ -104,10 +107,9 @@ func main() {
 	http.HandleFunc("/spec-url", handler(exampleForSpecURLAndMetadataUsage))
 	http.HandleFunc("/servers-override", handler(exampleForServersOverride))
 	http.HandleFunc("/other-configs", handler(exampleForOtherConfigs))
-	http.HandleFunc("/", func(w http.ResponseWriter, request *http.Request) {
-		buildStatic()
-		http.FileServer(http.Dir("./main/static")).ServeHTTP(w, request)
-	})
+
+	// Serve static files from build directory
+	http.Handle("/", http.FileServer(http.Dir("./build/docs")))
 
 	println("Starting server at http://localhost:8090")
 	server := &http.Server{
@@ -212,213 +214,560 @@ func (f *FindBlockByLine) Visit(node ast.Node) ast.Visitor {
 
 func getExamples() []*Example {
 	return []*Example{
-		// Basic Examples
+		// ============================================================
+		// Getting Started
+		// ============================================================
 		{
-			Name:        "Basic Usage",
-			Description: `Generate HTML documentation from a single OpenAPI spec file`,
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicUsage)),
-			Output:      ignoreError(examples.ExampleBasicUsage),
+			Name:         "Basic Usage",
+			Description:  `Generate HTML documentation from a single OpenAPI spec file`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicUsage)),
+			Output:       ignoreError(examples.ExampleBasicUsage),
+			Category:     "Getting Started",
+			CategoryIcon: "fa-rocket",
+			Icon:         "fa-play",
+		},
+		{
+			Name:         "Multi-File Specification",
+			Description:  `Load OpenAPI specs from multiple files in structured directories`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultiFileSpec)),
+			Output:       ignoreError(examples.ExampleMultiFileSpec),
+			Category:     "Getting Started",
+			CategoryIcon: "fa-rocket",
+			Icon:         "fa-folder-open",
+		},
+		{
+			Name:         "Spec from Bytes",
+			Description:  `Load spec from embedded bytes without external files`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleForSpecBytes)),
+			Output:       ignoreError(examples.ExampleForSpecBytes),
+			Category:     "Getting Started",
+			CategoryIcon: "fa-rocket",
+			Icon:         "fa-file-code",
 		},
 
-		// Multi-file Spec Examples
+		// ============================================================
+		// Authentication - API Key
+		// ============================================================
 		{
-			Name: "Multi-File Specification",
-			Description: `Load OpenAPI specs from multiple files in structured directories,
-				suitable for large APIs with split schemas and paths`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultiFileSpec)),
-			Output: ignoreError(examples.ExampleMultiFileSpec),
+			Name:         "Simple API Key",
+			Description:  `Basic API key authentication with header-based auth`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIKeySimple)),
+			Output:       ignoreError(examples.ExampleAPIKeySimple),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-key",
+		},
+		{
+			Name:         "Custom Header API Key",
+			Description:  `API key authentication with custom header name`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIKeyCustomHeader)),
+			Output:       ignoreError(examples.ExampleAPIKeyCustomHeader),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-heading",
+		},
+		{
+			Name:         "Query Parameter API Key",
+			Description:  `API key passed as query parameter`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIKeyQueryParameter)),
+			Output:       ignoreError(examples.ExampleAPIKeyQueryParameter),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-question-circle",
+		},
+		{
+			Name:         "Cookie API Key",
+			Description:  `API key passed as cookie value`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIKeyCookie)),
+			Output:       ignoreError(examples.ExampleAPIKeyCookie),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-cookie-bite",
 		},
 
-		// Spec Modification Examples
+		// ============================================================
+		// Authentication - HTTP
+		// ============================================================
 		{
-			Name:        "Basic Modification",
-			Description: `Dynamically modify API title, description, and version at runtime`,
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicModification)),
-			Output:      ignoreError(examples.ExampleBasicModification),
+			Name:         "HTTP Basic Auth",
+			Description:  `HTTP Basic authentication with username and password`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHTTPBasicAuth)),
+			Output:       ignoreError(examples.ExampleHTTPBasicAuth),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-user-lock",
 		},
 		{
-			Name: "Server Modification",
-			Description: `Add dynamic server URLs based on environment,
-				useful for multi-environment deployments`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleServerModification)),
-			Output: ignoreError(examples.ExampleServerModification),
-		},
-		{
-			Name: "Dynamic Information",
-			Description: `Add dynamic information and tags based on current state,
-				including runtime-generated content`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicInfo)),
-			Output: ignoreError(examples.ExampleDynamicInfo),
-		},
-		{
-			Name: "Path Analysis",
-			Description: `Analyze and display API path information,
-				including endpoint statistics and listings`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePathModification)),
-			Output: ignoreError(examples.ExamplePathModification),
-		},
-		{
-			Name:        "Spec from Bytes",
-			Description: `Load spec from embedded bytes, allowing for in-code specification without external files`,
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleForSpecBytes)),
-			Output:      ignoreError(examples.ExampleForSpecBytes),
+			Name:         "HTTP Bearer Token",
+			Description:  `HTTP Bearer token authentication`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHTTPBearerToken)),
+			Output:       ignoreError(examples.ExampleHTTPBearerToken),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-shield-alt",
 		},
 
-		// HTTP Server Integration Examples
+		// ============================================================
+		// Authentication - OAuth2
+		// ============================================================
 		{
-			Name: "Static Documentation",
-			Description: `Create static documentation with proper headers and caching
-				for production use`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleStaticDocumentation)),
-			Output: ignoreError(examples.ExampleStaticDocumentation),
+			Name:         "OAuth2 Authorization Code",
+			Description:  `OAuth2 Authorization Code flow with PKCE`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOAuth2AuthorizationCode)),
+			Output:       ignoreError(examples.ExampleOAuth2AuthorizationCode),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-code-branch",
 		},
 		{
-			Name: "Dynamic Documentation",
-			Description: `Generate documentation with custom metadata based on request,
-				including dynamic titles and timestamps`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicDocumentation)),
-			Output: ignoreError(examples.ExampleDynamicDocumentation),
+			Name:         "OAuth2 Client Credentials",
+			Description:  `OAuth2 Client Credentials for service-to-service auth`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOAuth2ClientCredentials)),
+			Output:       ignoreError(examples.ExampleOAuth2ClientCredentials),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-server",
 		},
 		{
-			Name: "URL-Based Documentation",
-			Description: `Load specification from external URL,
-				useful when specs are hosted elsewhere`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleURLBasedDocumentation)),
-			Output: ignoreError(examples.ExampleURLBasedDocumentation),
+			Name:         "OAuth2 Advanced Options",
+			Description:  `OAuth2 with custom parameters and advanced configuration`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOAuth2WithAdvancedOptions)),
+			Output:       ignoreError(examples.ExampleOAuth2WithAdvancedOptions),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-sliders-h",
 		},
 		{
-			Name: "API Version 1",
-			Description: `Serve documentation for multiple API versions
-				with version-specific metadata and theming`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV1)),
-			Output: ignoreError(examples.ExampleAPIV1),
-		},
-		{
-			Name: "API Version 2",
-			Description: `Serve newer API version documentation using external specs
-				with enhanced theming and dark mode`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV2)),
-			Output: ignoreError(examples.ExampleAPIV2),
-		},
-
-		// URL-based Loading Examples
-		{
-			Name:        "Scalar Galaxy API",
-			Description: `Load Scalar Galaxy API specification directly from CDN URL`,
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleScalarGalaxy)),
-			Output:      ignoreError(examples.ExampleScalarGalaxy),
-		},
-		{
-			Name:        "Petstore API",
-			Description: `Load classic Petstore OpenAPI spec from official repository`,
-			Code:        readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePetstore)),
-			Output:      ignoreError(examples.ExamplePetstore),
-		},
-		{
-			Name: "GitHub API",
-			Description: `Load and display complete GitHub REST API documentation
-				using their public OpenAPI specification`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleGitHubAPI)),
-			Output: ignoreError(examples.ExampleGitHubAPI),
-		},
-		{
-			Name: "OpenAI API Demo",
-			Description: `Load external API documentation with custom titles and theming
-				(using Scalar Galaxy as demo)`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOpenAIAPI)),
-			Output: ignoreError(examples.ExampleOpenAIAPI),
-		},
-		{
-			Name: "Customized External API",
-			Description: `Load external specs with comprehensive customization,
-				including custom CSS and UI options for branding`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomizedExternal)),
-			Output: ignoreError(examples.ExampleCustomizedExternal),
+			Name:         "OAuth2 PKCE",
+			Description:  `OAuth2 with different PKCE modes (SHA-256, Plain, Disabled)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOAuth2PKCE)),
+			Output:       ignoreError(examples.ExampleOAuth2PKCE),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-fingerprint",
 		},
 
-		// Theme Examples
+		// ============================================================
+		// Authentication - Multiple & Real-World
+		// ============================================================
 		{
-			Name: "Default Theme",
-			Description: `Default theme with clean, modern styling
-				for professional API documentation`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeDefault)),
-			Output: ignoreError(examples.ExampleThemeDefault),
+			Name:         "Multiple Security Schemes",
+			Description:  `Configure multiple authentication methods (API Key, Bearer, Basic)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultipleSecuritySchemes)),
+			Output:       ignoreError(examples.ExampleMultipleSecuritySchemes),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-layer-group",
 		},
 		{
-			Name: "Moon Theme",
-			Description: `Moon theme with dark styling and blue accents,
-				perfect for modern dark-mode preferences`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeMoon)),
-			Output: ignoreError(examples.ExampleThemeMoon),
+			Name:         "Multiple with OAuth2",
+			Description:  `Multiple auth methods including OAuth2`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultipleSecuritySchemesWithOAuth2)),
+			Output:       ignoreError(examples.ExampleMultipleSecuritySchemesWithOAuth2),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-users-cog",
 		},
 		{
-			Name: "Purple Theme",
-			Description: `Purple theme with vibrant color scheme
-				for distinctive API documentation`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemePurple)),
-			Output: ignoreError(examples.ExampleThemePurple),
+			Name:         "GitHub-Style Auth",
+			Description:  `GitHub-style auth with PAT, OAuth App, and GitHub App tokens`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleGitHubStyleAuth)),
+			Output:       ignoreError(examples.ExampleGitHubStyleAuth),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-github",
 		},
 		{
-			Name: "Solarized Theme",
-			Description: `Solarized theme based on popular color scheme,
-				offering excellent readability and reduced eye strain`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeSolarized)),
-			Output: ignoreError(examples.ExampleThemeSolarized),
-		},
-
-		// Layout Examples
-		{
-			Name: "Modern Layout",
-			Description: `Modern layout with contemporary design elements
-				and enhanced user experience`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutModern)),
-			Output: ignoreError(examples.ExampleLayoutModern),
+			Name:         "Stripe-Style Auth",
+			Description:  `Stripe-style authentication with test/live key separation`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleStripeStyleAuth)),
+			Output:       ignoreError(examples.ExampleStripeStyleAuth),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-credit-card",
 		},
 		{
-			Name: "Classic Layout",
-			Description: `Classic layout with traditional documentation design,
-				familiar from conventional API tools`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutClassic)),
-			Output: ignoreError(examples.ExampleLayoutClassic),
-		},
-
-		// Visibility Examples
-		{
-			Name: "Hide Sidebar",
-			Description: `Hide sidebar for cleaner, focused layout
-				with more space for content`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideSidebar)),
-			Output: ignoreError(examples.ExampleHideSidebar),
+			Name:         "Auth0-Style OAuth2",
+			Description:  `Auth0-style OAuth2 configuration with audience`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAuth0StyleOAuth2)),
+			Output:       ignoreError(examples.ExampleAuth0StyleOAuth2),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-id-badge",
 		},
 		{
-			Name: "Hide Models",
-			Description: `Hide models section to focus on API endpoints,
-				useful for endpoint-centric documentation`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideModels)),
-			Output: ignoreError(examples.ExampleHideModels),
-		},
-		{
-			Name: "Dark Mode",
-			Description: `Enable dark mode by default for modern interface
-				that's easier on the eyes`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDarkMode)),
-			Output: ignoreError(examples.ExampleDarkMode),
+			Name:         "Production API Full Auth",
+			Description:  `Production-ready API with comprehensive auth setup`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleProductionAPIWithFullAuth)),
+			Output:       ignoreError(examples.ExampleProductionAPIWithFullAuth),
+			Category:     "Authentication",
+			CategoryIcon: "fa-lock",
+			Icon:         "fa-industry",
 		},
 
-		// Advanced Customization Examples
+		// ============================================================
+		// Spec Modification
+		// ============================================================
 		{
-			Name: "Custom CSS",
-			Description: `Apply custom CSS overrides for branded documentation
-				with custom colors, fonts, and styling`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSS)),
-			Output: ignoreError(examples.ExampleCustomCSS),
+			Name:         "Basic Modification",
+			Description:  `Dynamically modify API title, description, and version`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicModification)),
+			Output:       ignoreError(examples.ExampleBasicModification),
+			Category:     "Spec Modification",
+			CategoryIcon: "fa-edit",
+			Icon:         "fa-pencil-alt",
 		},
 		{
-			Name: "All Options Combined",
-			Description: `Combine multiple options including theme, layout, UI controls,
-				and custom CSS for comprehensive documentation branding`,
-			Code:   readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAllOptions)),
-			Output: ignoreError(examples.ExampleAllOptions),
+			Name:         "Server Modification",
+			Description:  `Add dynamic server URLs based on environment`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleServerModification)),
+			Output:       ignoreError(examples.ExampleServerModification),
+			Category:     "Spec Modification",
+			CategoryIcon: "fa-edit",
+			Icon:         "fa-server",
+		},
+		{
+			Name:         "Dynamic Information",
+			Description:  `Add dynamic information and tags at runtime`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicInfo)),
+			Output:       ignoreError(examples.ExampleDynamicInfo),
+			Category:     "Spec Modification",
+			CategoryIcon: "fa-edit",
+			Icon:         "fa-sync-alt",
+		},
+		{
+			Name:         "Path Analysis",
+			Description:  `Analyze and display API path statistics`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePathModification)),
+			Output:       ignoreError(examples.ExamplePathModification),
+			Category:     "Spec Modification",
+			CategoryIcon: "fa-edit",
+			Icon:         "fa-route",
+		},
+
+		// ============================================================
+		// HTTP Server Integration
+		// ============================================================
+		{
+			Name:         "Static Documentation",
+			Description:  `Static documentation with proper caching for production`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleStaticDocumentation)),
+			Output:       ignoreError(examples.ExampleStaticDocumentation),
+			Category:     "Server Integration",
+			CategoryIcon: "fa-network-wired",
+			Icon:         "fa-file-alt",
+		},
+		{
+			Name:         "Dynamic Documentation",
+			Description:  `Generate documentation with dynamic metadata`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicDocumentation)),
+			Output:       ignoreError(examples.ExampleDynamicDocumentation),
+			Category:     "Server Integration",
+			CategoryIcon: "fa-network-wired",
+			Icon:         "fa-sync",
+		},
+		{
+			Name:         "URL-Based Documentation",
+			Description:  `Load specification from external URL`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleURLBasedDocumentation)),
+			Output:       ignoreError(examples.ExampleURLBasedDocumentation),
+			Category:     "Server Integration",
+			CategoryIcon: "fa-network-wired",
+			Icon:         "fa-link",
+		},
+		{
+			Name:         "API Version 1",
+			Description:  `Serve documentation for API v1 with metadata`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV1)),
+			Output:       ignoreError(examples.ExampleAPIV1),
+			Category:     "Server Integration",
+			CategoryIcon: "fa-network-wired",
+			Icon:         "fa-tag",
+		},
+		{
+			Name:         "API Version 2",
+			Description:  `Serve documentation for API v2 with enhanced theming`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV2)),
+			Output:       ignoreError(examples.ExampleAPIV2),
+			Category:     "Server Integration",
+			CategoryIcon: "fa-network-wired",
+			Icon:         "fa-tags",
+		},
+		{
+			Name:         "API V1 with Auth",
+			Description:  `API v1 documentation with basic authentication`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV1WithAuth)),
+			Output:       ignoreError(examples.ExampleAPIV1WithAuth),
+			Category:     "Server Integration",
+			CategoryIcon: "fa-network-wired",
+			Icon:         "fa-user-shield",
+		},
+		{
+			Name:         "API V2 with OAuth2",
+			Description:  `API v2 documentation with OAuth2 authentication`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAPIV2WithOAuth2)),
+			Output:       ignoreError(examples.ExampleAPIV2WithOAuth2),
+			Category:     "Server Integration",
+			CategoryIcon: "fa-network-wired",
+			Icon:         "fa-lock",
+		},
+		{
+			Name:         "Production API",
+			Description:  `Production API with environment-specific auth endpoints`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleProductionAPI)),
+			Output:       ignoreError(examples.ExampleProductionAPI),
+			Category:     "Server Integration",
+			CategoryIcon: "fa-network-wired",
+			Icon:         "fa-industry",
+		},
+
+		// ============================================================
+		// External APIs
+		// ============================================================
+		{
+			Name:         "Scalar Galaxy API",
+			Description:  `Load Scalar Galaxy API spec from CDN`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleScalarGalaxy)),
+			Output:       ignoreError(examples.ExampleScalarGalaxy),
+			Category:     "External APIs",
+			CategoryIcon: "fa-cloud-download-alt",
+			Icon:         "fa-space-shuttle",
+		},
+		{
+			Name:         "Petstore API",
+			Description:  `Classic Petstore OpenAPI specification`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePetstore)),
+			Output:       ignoreError(examples.ExamplePetstore),
+			Category:     "External APIs",
+			CategoryIcon: "fa-cloud-download-alt",
+			Icon:         "fa-paw",
+		},
+		{
+			Name:         "GitHub API",
+			Description:  `Complete GitHub REST API documentation`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleGitHubAPI)),
+			Output:       ignoreError(examples.ExampleGitHubAPI),
+			Category:     "External APIs",
+			CategoryIcon: "fa-cloud-download-alt",
+			Icon:         "fa-github",
+		},
+		{
+			Name:         "OpenAI API Demo",
+			Description:  `External API with custom titles and theming`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOpenAIAPI)),
+			Output:       ignoreError(examples.ExampleOpenAIAPI),
+			Category:     "External APIs",
+			CategoryIcon: "fa-cloud-download-alt",
+			Icon:         "fa-brain",
+		},
+		{
+			Name:         "Customized External API",
+			Description:  `External spec with comprehensive branding customization`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomizedExternal)),
+			Output:       ignoreError(examples.ExampleCustomizedExternal),
+			Category:     "External APIs",
+			CategoryIcon: "fa-cloud-download-alt",
+			Icon:         "fa-paint-brush",
+		},
+
+		// ============================================================
+		// Themes
+		// ============================================================
+		{
+			Name:         "Default Theme",
+			Description:  `Default theme with clean, modern styling`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeDefault)),
+			Output:       ignoreError(examples.ExampleThemeDefault),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-circle",
+		},
+		{
+			Name:         "Alternate Theme",
+			Description:  `Alternative theme with distinct styling`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeAlternate)),
+			Output:       ignoreError(examples.ExampleThemeAlternate),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-adjust",
+		},
+		{
+			Name:         "Moon Theme",
+			Description:  `Dark theme with blue accents for modern interfaces`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeMoon)),
+			Output:       ignoreError(examples.ExampleThemeMoon),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-moon",
+		},
+		{
+			Name:         "Purple Theme",
+			Description:  `Vibrant purple color scheme for distinctive docs`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemePurple)),
+			Output:       ignoreError(examples.ExampleThemePurple),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-crown",
+		},
+		{
+			Name:         "Solarized Theme",
+			Description:  `Solarized theme for excellent readability`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeSolarized)),
+			Output:       ignoreError(examples.ExampleThemeSolarized),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-sun",
+		},
+		{
+			Name:         "Blue Planet Theme",
+			Description:  `Oceanic blue theme with calming aesthetics`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeBluePlanet)),
+			Output:       ignoreError(examples.ExampleThemeBluePlanet),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-globe",
+		},
+		{
+			Name:         "Deep Space Theme",
+			Description:  `Dark cosmic theme with stellar design elements`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeDeepSpace)),
+			Output:       ignoreError(examples.ExampleThemeDeepSpace),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-satellite",
+		},
+		{
+			Name:         "Saturn Theme",
+			Description:  `Planetary theme with sophisticated color scheme`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeSaturn)),
+			Output:       ignoreError(examples.ExampleThemeSaturn),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-ring",
+		},
+		{
+			Name:         "Kepler Theme",
+			Description:  `Astronomical theme inspired by space exploration`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeKepler)),
+			Output:       ignoreError(examples.ExampleThemeKepler),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-meteor",
+		},
+		{
+			Name:         "Mars Theme",
+			Description:  `Red planet theme with warm, earthy tones`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeMars)),
+			Output:       ignoreError(examples.ExampleThemeMars),
+			Category:     "Themes",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-circle",
+		},
+
+		// ============================================================
+		// Layouts
+		// ============================================================
+		{
+			Name:         "Modern Layout",
+			Description:  `Modern layout with contemporary design`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutModern)),
+			Output:       ignoreError(examples.ExampleLayoutModern),
+			Category:     "Layouts",
+			CategoryIcon: "fa-th-large",
+			Icon:         "fa-layer-group",
+		},
+		{
+			Name:         "Classic Layout",
+			Description:  `Classic layout with traditional design`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutClassic)),
+			Output:       ignoreError(examples.ExampleLayoutClassic),
+			Category:     "Layouts",
+			CategoryIcon: "fa-th-large",
+			Icon:         "fa-columns",
+		},
+
+		// ============================================================
+		// UI Options
+		// ============================================================
+		{
+			Name:         "Hide Sidebar",
+			Description:  `Cleaner layout with hidden sidebar`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideSidebar)),
+			Output:       ignoreError(examples.ExampleHideSidebar),
+			Category:     "UI Options",
+			CategoryIcon: "fa-eye",
+			Icon:         "fa-eye-slash",
+		},
+		{
+			Name:         "Hide Models",
+			Description:  `Focus on endpoints by hiding models section`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideModels)),
+			Output:       ignoreError(examples.ExampleHideModels),
+			Category:     "UI Options",
+			CategoryIcon: "fa-eye",
+			Icon:         "fa-border-none",
+		},
+		{
+			Name:         "Dark Mode",
+			Description:  `Enable dark mode by default`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDarkMode)),
+			Output:       ignoreError(examples.ExampleDarkMode),
+			Category:     "UI Options",
+			CategoryIcon: "fa-eye",
+			Icon:         "fa-adjust",
+		},
+
+		// ============================================================
+		// Client Options
+		// ============================================================
+		{
+			Name:         "Hide All Clients",
+			Description:  `Hide all client code examples from documentation`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideAllClients)),
+			Output:       ignoreError(examples.ExampleHideAllClients),
+			Category:     "Client Options",
+			CategoryIcon: "fa-code",
+			Icon:         "fa-eye-slash",
+		},
+		{
+			Name:         "Show Only Curl & Fetch",
+			Description:  `Display only curl and fetch client examples`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleShowOnlyCurlAndFetch)),
+			Output:       ignoreError(examples.ExampleShowOnlyCurlAndFetch),
+			Category:     "Client Options",
+			CategoryIcon: "fa-code",
+			Icon:         "fa-terminal",
+		},
+		{
+			Name:         "Show All Clients",
+			Description:  `Display all available client code examples (default)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleShowAllClients)),
+			Output:       ignoreError(examples.ExampleShowAllClients),
+			Category:     "Client Options",
+			CategoryIcon: "fa-code",
+			Icon:         "fa-list",
+		},
+
+		// ============================================================
+		// Advanced Customization
+		// ============================================================
+		{
+			Name:         "Custom CSS",
+			Description:  `Apply custom CSS for branded documentation`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSS)),
+			Output:       ignoreError(examples.ExampleCustomCSS),
+			Category:     "Advanced",
+			CategoryIcon: "fa-cogs",
+			Icon:         "fa-paint-brush",
+		},
+		{
+			Name:         "All Options Combined",
+			Description:  `Comprehensive example combining multiple options`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAllOptions)),
+			Output:       ignoreError(examples.ExampleAllOptions),
+			Category:     "Advanced",
+			CategoryIcon: "fa-cogs",
+			Icon:         "fa-star",
 		},
 	}
 }

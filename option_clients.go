@@ -31,4 +31,9 @@ const (
 	ClientWebRequest   = "webrequest"
 	ClientWget         = "wget"
 	ClientXhr          = "xhr"
+	ClientHTTP         = "http"
+	ClientOfetch       = "ofetch"
+	ClientHTTPXSync    = "httpxsync"
+	ClientHTTPXAsync   = "httpxasync"
+	ClientReqWest      = "reqwest"
 )

@@ -40,6 +40,60 @@ func ExampleThemeSolarized() (string, error) {
 	)
 }
 
+// ExampleThemeAlternate demonstrates the alternate theme
+func ExampleThemeAlternate() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithTheme(scalargo.ThemeAlternate),
+	)
+}
+
+// ExampleThemeBluePlanet demonstrates the blue planet theme
+func ExampleThemeBluePlanet() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithTheme(scalargo.ThemeBluePlanet),
+	)
+}
+
+// ExampleThemeDeepSpace demonstrates the deep space theme
+func ExampleThemeDeepSpace() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithTheme(scalargo.ThemeDeepSpace),
+	)
+}
+
+// ExampleThemeSaturn demonstrates the saturn theme
+func ExampleThemeSaturn() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithTheme(scalargo.ThemeSaturn),
+	)
+}
+
+// ExampleThemeKepler demonstrates the kepler theme
+func ExampleThemeKepler() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithTheme(scalargo.ThemeKepler),
+	)
+}
+
+// ExampleThemeMars demonstrates the mars theme
+func ExampleThemeMars() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithTheme(scalargo.ThemeMars),
+	)
+}
+
 // Layout examples - self-contained spec functions
 
 // ExampleLayoutModern demonstrates the modern layout
@@ -119,7 +173,74 @@ func ExampleCustomCSS() (string, error) {
 	)
 }
 
-// ExampleAllOptions demonstrates combining multiple customization options
+// Client Visibility Examples
+
+// ExampleHideAllClients demonstrates hiding all client examples
+func ExampleHideAllClients() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithHideAllClients(),
+	)
+}
+
+// ExampleShowOnlyCurlAndFetch demonstrates showing only curl and fetch clients
+func ExampleShowOnlyCurlAndFetch() (string, error) {
+	// To show only specific clients, hide all others
+	hiddenClients := []string{
+		scalargo.ClientAsyncHTTP,
+		scalargo.ClientAxios,
+		scalargo.ClientCljHTTP,
+		scalargo.ClientCoHTTP,
+		// Keep: scalargo.ClientCurl,
+		// Keep: scalargo.ClientFetch,
+		scalargo.ClientGuzzle,
+		scalargo.ClientHTTP1,
+		scalargo.ClientHTTPClient,
+		scalargo.ClientHTTP2,
+		scalargo.ClientHttpie,
+		scalargo.ClientHttr,
+		scalargo.ClientJquery,
+		scalargo.ClientLibCurl,
+		scalargo.ClientNative,
+		scalargo.ClientNetHTTP,
+		scalargo.ClientNsurlSession,
+		scalargo.ClientOkHTTP,
+		scalargo.ClientPython3,
+		scalargo.ClientRequest,
+		scalargo.ClientRequests,
+		scalargo.ClientRestMethod,
+		scalargo.ClientRestSharp,
+		scalargo.ClientUndici,
+		scalargo.ClientUnirest,
+		scalargo.ClientWebRequest,
+		scalargo.ClientWget,
+		scalargo.ClientXhr,
+		scalargo.ClientHTTP,
+		scalargo.ClientOfetch,
+		scalargo.ClientHTTPXSync,
+		scalargo.ClientHTTPXAsync,
+		scalargo.ClientReqWest,
+		scalargo.ClientOkhttp,
+	}
+
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithHiddenClients(hiddenClients...),
+	)
+}
+
+// ExampleShowAllClients demonstrates showing all available client examples (default behavior)
+func ExampleShowAllClients() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		// No WithHiddenClients or WithHideAllClients means all clients are visible
+	)
+}
+
+// ExampleAllOptions demonstrates combining multiple customization options including authentication
 func ExampleAllOptions() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
@@ -135,5 +256,10 @@ func ExampleAllOptions() (string, error) {
 				--scalar-color-2: #4a5568;
 			}
 		`),
+		// Add authentication configuration
+		scalargo.WithAuthenticationOpts(
+			scalargo.WithAPIKey("demo-api-key"),
+			scalargo.WithHTTPBearerToken("demo-bearer-token"),
+		),
 	)
 }

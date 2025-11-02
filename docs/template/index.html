@@ -137,6 +137,66 @@
             text-align: center;
         }
 
+        /* Category Group Styles */
+        .nav-category {
+            margin: 0 1rem 0.5rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1rem;
+            color: var(--text-primary);
+            background: rgba(100, 116, 139, 0.1);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            border: 1px solid transparent;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background: rgba(100, 116, 139, 0.2);
+            border-color: rgba(100, 116, 139, 0.3);
+        }
+
+        .category-header i.category-icon {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .category-header i.chevron {
+            margin-left: auto;
+            transition: transform 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .category-header.expanded i.chevron {
+            transform: rotate(90deg);
+        }
+
+        .category-items {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding-left: 0.5rem;
+        }
+
+        .category-items.expanded {
+            max-height: 2000px;
+        }
+
+        .category-items .nav-item {
+            margin: 0.5rem 0;
+        }
+
+        .category-items .nav-link {
+            padding-left: 2.5rem;
+        }
+
         /* Main Content Styles */
         .main-content {
             flex: 1;
@@ -623,21 +683,68 @@
         setTimeout(() => codeContent.classList.add('fade-in'), 10);
     }
 
+    // Create or get category group
+    function getOrCreateCategory(categoryName, categoryIcon = 'fa-folder') {
+        const sidebar = document.querySelector('.sidebar-nav');
+        const categoryId = `category-${categoryName.toLowerCase().replace(/\s+/g, '-')}`;
+
+        let category = document.getElementById(categoryId);
+        if (category) {
+            return category.querySelector('.category-items');
+        }
+
+        // Create new category
+        const categoryDiv = document.createElement('div');
+        categoryDiv.classList.add('nav-category');
+        categoryDiv.id = categoryId;
+
+        const header = document.createElement('div');
+        header.classList.add('category-header');
+
+        const icon = document.createElement('i');
+        icon.classList.add('fas', categoryIcon, 'category-icon');
+
+        const title = document.createElement('span');
+        title.textContent = categoryName;
+
+        const chevron = document.createElement('i');
+        chevron.classList.add('fas', 'fa-chevron-right', 'chevron');
+
+        header.appendChild(icon);
+        header.appendChild(title);
+        header.appendChild(chevron);
+
+        const itemsContainer = document.createElement('div');
+        itemsContainer.classList.add('category-items');
+
+        // Toggle category on click
+        header.addEventListener('click', () => {
+            header.classList.toggle('expanded');
+            itemsContainer.classList.toggle('expanded');
+        });
+
+        categoryDiv.appendChild(header);
+        categoryDiv.appendChild(itemsContainer);
+        sidebar.appendChild(categoryDiv);
+
+        return itemsContainer;
+    }
+
     // Add example to sidebar
     function addExampleToSidebar(example, idx) {
         const li = document.createElement('li');
         li.classList.add('nav-item');
-        
+
         const a = document.createElement('a');
         a.classList.add('nav-link', `example_${idx}`);
         a.href = '#';
-        
+
         const icon = document.createElement('i');
-        icon.classList.add('fas', 'fa-play-circle');
-        
+        icon.classList.add('fas', example.icon || 'fa-play-circle');
+
         const span = document.createElement('span');
         span.textContent = example.name;
-        
+
         a.appendChild(icon);
         a.appendChild(span);
         li.appendChild(a);
@@ -647,7 +754,13 @@
             renderExample(example, idx);
         });
 
-        document.querySelector('.sidebar-nav').appendChild(li);
+        // Add to category or directly to sidebar
+        if (example.category) {
+            const categoryContainer = getOrCreateCategory(example.category, example.categoryIcon || 'fa-folder');
+            categoryContainer.appendChild(li);
+        } else {
+            document.querySelector('.sidebar-nav').appendChild(li);
+        }
     }
 
     // Loading state management
@@ -682,6 +795,14 @@
                 addExampleToSidebar(example, idx);
             });
             renderExample(examples[0], 0);
+
+            // Expand first category by default
+            setTimeout(() => {
+                const firstCategory = document.querySelector('.category-header');
+                if (firstCategory) {
+                    firstCategory.click();
+                }
+            }, 50);
 
             // Remove welcome link after examples are loaded
             setTimeout(() => {

@@ -294,6 +294,135 @@ html, err := scalargo.NewV2(
 )
 ```
 
+### 🔐 **Authentication Configuration**
+
+Scalar-Go provides comprehensive authentication support for modern APIs, including API Keys, HTTP Basic/Bearer, and OAuth2 flows.
+
+#### **Enhanced API Key Authentication**
+
+```go
+// Simple API Key (header-based, backward compatible)
+scalargo.WithAuthenticationOpts(
+    scalargo.WithAPIKey("your-api-key"),
+)
+
+// Custom header name
+scalargo.WithAuthenticationOpts(
+    scalargo.WithAPIKey("your-api-key", scalargo.WithAPIKeyName("X-API-Key")),
+)
+
+// Query parameter-based API Key
+scalargo.WithAuthenticationOpts(
+    scalargo.WithAPIKeyQuery("api_key", "your-api-key"),
+)
+
+// Cookie-based API Key
+scalargo.WithAuthenticationOpts(
+    scalargo.WithAPIKeyCookie("session_token", "your-token"),
+)
+```
+
+#### **HTTP Basic & Bearer Authentication**
+
+```go
+// HTTP Basic Auth
+scalargo.WithAuthenticationOpts(
+    scalargo.WithHTTPBasicAuth("username", "password"),
+)
+
+// HTTP Bearer Token
+scalargo.WithAuthenticationOpts(
+    scalargo.WithHTTPBearerToken("your-bearer-token"),
+)
+```
+
+#### **OAuth2 Authentication**
+
+Full OAuth2 support with all standard flows and PKCE.
+
+**Authorization Code Flow (Recommended)**
+```go
+scalargo.WithAuthenticationOpts(
+    scalargo.WithOAuth2AuthorizationCode(
+        "https://auth.example.com/oauth/authorize",
+        "https://auth.example.com/oauth/token",
+        scalargo.WithOAuth2ClientID("my-client-id"),
+        scalargo.WithOAuth2RedirectURI("https://myapp.com/callback"),
+        scalargo.WithOAuth2PKCE(scalargo.PKCES256), // SHA-256 PKCE (recommended)
+        scalargo.WithOAuth2Scopes("read:api", "write:api"),
+    ),
+)
+```
+
+**Client Credentials Flow**
+```go
+scalargo.WithAuthenticationOpts(
+    scalargo.WithOAuth2ClientCredentials(
+        "https://auth.example.com/oauth/token",
+        scalargo.WithOAuth2ClientID("service-account"),
+        scalargo.WithOAuth2ClientSecret("super-secret"),
+    ),
+)
+```
+
+**Advanced OAuth2 Customization**
+```go
+scalargo.WithAuthenticationOpts(
+    scalargo.WithOAuth2AuthorizationCode(
+        "https://auth.example.com/oauth/authorize",
+        "https://auth.example.com/oauth/token",
+        scalargo.WithOAuth2ClientID("my-client"),
+        scalargo.WithOAuth2CustomToken("custom_access_token"), // Custom token field name
+        scalargo.WithOAuth2AdditionalAuthParams(map[string]string{
+            "audience": "https://api.example.com",
+        }),
+        scalargo.WithOAuth2AdditionalTokenParams(map[string]string{
+            "resource": "https://resource.example.com",
+        }),
+        scalargo.WithOAuth2CredentialsLocation(scalargo.OAuth2CredentialsHeader),
+    ),
+)
+```
+
+#### **Multiple Security Schemes**
+
+Configure multiple authentication methods for your API:
+
+```go
+scalargo.WithAuthenticationOpts(
+    // Define multiple security schemes
+    scalargo.WithSecurityScheme("api_key",
+        scalargo.APIKeyScheme("X-API-Key", scalargo.APIKeyLocationHeader, "default-key"),
+    ),
+    scalargo.WithSecurityScheme("bearer_auth",
+        scalargo.BearerScheme("default-token"),
+    ),
+    scalargo.WithSecurityScheme("oauth2",
+        scalargo.OAuth2Scheme(
+            scalargo.OAuth2FlowAuthorizationCode,
+            scalargo.OAuth2Config{
+                AuthorizationURL: "https://auth.example.com/authorize",
+                TokenURL:         "https://auth.example.com/token",
+                ClientID:         "my-client",
+                UsePKCE:          scalargo.PKCES256,
+                SelectedScopes:   []string{"read:api", "write:api"},
+            },
+        ),
+    ),
+    // Set preferred security scheme
+    scalargo.WithPreferredSecurityScheme("bearer_auth"),
+)
+```
+
+**PKCE Modes:**
+- `scalargo.PKCES256` - SHA-256 PKCE (recommended for production)
+- `scalargo.PKCEPlain` - Plain PKCE
+- `scalargo.PKCEDisabled` - Disable PKCE
+
+**OAuth2 Credentials Location:**
+- `scalargo.OAuth2CredentialsHeader` - Send credentials in Authorization header (default)
+- `scalargo.OAuth2CredentialsBody` - Send credentials in request body
+
 ## 🚀 Real-World Examples
 
 ### 🏢 **Enterprise API Documentation**
