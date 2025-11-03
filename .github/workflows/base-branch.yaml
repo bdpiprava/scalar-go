@@ -24,9 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.22
+          go-version-file: go.mod
       - name: Install dependencies
         run: go get . && go install gotest.tools/gotestsum@latest
       - name: Run unit tests
@@ -46,9 +46,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
-          go-version: 1.22
+          go-version-file: go.mod
       - name: Install dependencies
         run: go get .
       - name: Generate Docs
@@ -56,7 +56,7 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: './build/docs'
       - name: Deploy to GitHub Pages
