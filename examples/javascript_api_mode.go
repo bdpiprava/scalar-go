@@ -32,24 +32,24 @@ func ExampleJavaScriptAPIWithCustomJS() (string, error) {
 	)
 }
 
-// ExampleHideSearchAndShowOperationId demonstrates display configuration options
-func ExampleHideSearchAndShowOperationId() (string, error) {
+// ExampleHideSearchAndShowOperationID demonstrates display configuration options
+func ExampleHideSearchAndShowOperationID() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
 		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
 		scalargo.WithHideSearch(true),
-		scalargo.WithShowOperationId(true),
+		scalargo.WithShowOperationID(true),
 	)
 }
 
-// ExampleDefaultHttpClient demonstrates setting the default HTTP client for code examples
-func ExampleDefaultHttpClient() (string, error) {
+// ExampleDefaultHTTPClient demonstrates setting the default HTTP client for code examples
+func ExampleDefaultHTTPClient() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
 		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
-		scalargo.WithDefaultHttpClient("node", "undici"),
+		scalargo.WithDefaultHTTPClient("node", "undici"),
 	)
 }
 
@@ -107,8 +107,8 @@ func ExampleMultipleSources() (string, error) {
 	)
 }
 
-// ExampleCustomCssInConfig demonstrates setting custom CSS via configuration object
-func ExampleCustomCssInConfig() (string, error) {
+// ExampleCustomCSSInConfig demonstrates setting custom CSS via configuration object
+func ExampleCustomCSSInConfig() (string, error) {
 	customCSS := `
 		.scalar-card {
 			border-radius: 12px;
@@ -123,7 +123,7 @@ func ExampleCustomCssInConfig() (string, error) {
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
 		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
-		scalargo.WithCustomCss(customCSS),
+		scalargo.WithCustomCSS(customCSS),
 	)
 }
 
@@ -137,8 +137,8 @@ func ExampleAdvancedConfiguration() (string, error) {
 		scalargo.WithLayout(scalargo.LayoutModern),
 		scalargo.WithDarkMode(),
 		scalargo.WithHideSearch(false),
-		scalargo.WithShowOperationId(true),
-		scalargo.WithDefaultHttpClient("node", "undici"),
+		scalargo.WithShowOperationID(true),
+		scalargo.WithDefaultHTTPClient("node", "undici"),
 		scalargo.WithTagsSorter(scalargo.SorterAlpha),
 		scalargo.WithOperationsSorter(scalargo.SorterMethod),
 		scalargo.WithPersistAuth(true),

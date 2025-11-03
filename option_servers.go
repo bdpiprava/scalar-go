@@ -8,9 +8,9 @@ type ServerOverride struct {
 	Description string `json:"description"`
 }
 
-// Deprecated: use ServerOverride instead.
 // Server is alias exists for backwards compatibility but will be removed in a future version.
 // The name was changed to avoid collision with model.Server.
+//
 // Deprecated: use ServerOverride instead.
 type Server = ServerOverride
 

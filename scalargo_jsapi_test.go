@@ -153,22 +153,22 @@ func TestWithHideSearch(t *testing.T) {
 	assert.Contains(t, html, `"hideSearch":true`)
 }
 
-func TestWithShowOperationId(t *testing.T) {
+func TestWithShowOperationID(t *testing.T) {
 	html, err := NewV2(
 		WithSpecURL("https://example.com/openapi.json"),
 		WithRenderMode(RenderModeJavaScriptAPI),
-		WithShowOperationId(true),
+		WithShowOperationID(true),
 	)
 
 	require.NoError(t, err)
 	assert.Contains(t, html, `"showOperationId":true`)
 }
 
-func TestWithDefaultHttpClient(t *testing.T) {
+func TestWithDefaultHTTPClient(t *testing.T) {
 	html, err := NewV2(
 		WithSpecURL("https://example.com/openapi.json"),
 		WithRenderMode(RenderModeJavaScriptAPI),
-		WithDefaultHttpClient("node", "undici"),
+		WithDefaultHTTPClient("node", "undici"),
 	)
 
 	require.NoError(t, err)
@@ -243,13 +243,13 @@ func TestWithPersistAuth(t *testing.T) {
 	assert.Contains(t, html, `"persistAuth":true`)
 }
 
-func TestWithCustomCss(t *testing.T) {
+func TestWithCustomCSS(t *testing.T) {
 	customCSS := `.scalar-card { border: 2px solid red; }`
 
 	html, err := NewV2(
 		WithSpecURL("https://example.com/openapi.json"),
 		WithRenderMode(RenderModeJavaScriptAPI),
-		WithCustomCss(customCSS),
+		WithCustomCSS(customCSS),
 	)
 
 	require.NoError(t, err)
@@ -294,8 +294,8 @@ func TestCombinedNewOptions(t *testing.T) {
 		WithTheme(ThemePurple),
 		WithLayout(LayoutModern),
 		WithHideSearch(true),
-		WithShowOperationId(true),
-		WithDefaultHttpClient("node", "undici"),
+		WithShowOperationID(true),
+		WithDefaultHTTPClient("node", "undici"),
 		WithTagsSorter(SorterAlpha),
 		WithOperationsSorter(SorterMethod),
 		WithPersistAuth(true),

@@ -1,7 +1,7 @@
 package scalargo
 
-// HttpClientConfig configures the default HTTP client to use in the Scalar UI
-type HttpClientConfig struct {
+// HTTPClientConfig configures the default HTTP client to use in the Scalar UI
+type HTTPClientConfig struct {
 	TargetKey string `json:"targetKey"` // Target language/platform (e.g., "node", "php", "python")
 	ClientKey string `json:"clientKey"` // Specific client library (e.g., "undici", "guzzle", "requests")
 }

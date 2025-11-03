@@ -7,17 +7,17 @@ func WithHideSearch(hide bool) func(*Options) {
 	}
 }
 
-// WithShowOperationId shows or hides operation IDs in the Scalar UI
-func WithShowOperationId(show bool) func(*Options) {
+// WithShowOperationID shows or hides operation IDs in the Scalar UI
+func WithShowOperationID(show bool) func(*Options) {
 	return func(o *Options) {
-		o.Configurations[keyShowOperationId] = show
+		o.Configurations[keyShowOperationID] = show
 	}
 }
 
-// WithDefaultHttpClient sets the default HTTP client for code examples
-func WithDefaultHttpClient(target, client string) func(*Options) {
+// WithDefaultHTTPClient sets the default HTTP client for code examples
+func WithDefaultHTTPClient(target, client string) func(*Options) {
 	return func(o *Options) {
-		o.Configurations[keyDefaultHttpClient] = HttpClientConfig{
+		o.Configurations[keyDefaultHTTPClient] = HTTPClientConfig{
 			TargetKey: target,
 			ClientKey: client,
 		}
@@ -59,10 +59,10 @@ func WithPersistAuth(persist bool) func(*Options) {
 	}
 }
 
-// WithCustomCss sets custom CSS in the configuration object (different from WithOverrideCSS which injects CSS in <style> tag)
-func WithCustomCss(css string) func(*Options) {
+// WithCustomCSS sets custom CSS in the configuration object (different from WithOverrideCSS which injects CSS in <style> tag)
+func WithCustomCSS(css string) func(*Options) {
 	return func(o *Options) {
-		o.Configurations[keyCustomCss] = css
+		o.Configurations[keyCustomCSS] = css
 	}
 }
 

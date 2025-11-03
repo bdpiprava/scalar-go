@@ -29,14 +29,14 @@ const (
 	keyServers                 = "servers"
 	keyMetaData                = "metadata"
 	keyHideSearch              = "hideSearch"
-	keyShowOperationId         = "showOperationId"
-	keyDefaultHttpClient       = "defaultHttpClient"
+	keyShowOperationID         = "showOperationId"
+	keyDefaultHTTPClient       = "defaultHttpClient"
 	keyTagsSorter              = "tagsSorter"
 	keyOperationsSorter        = "operationsSorter"
 	keyOperationTitleSource    = "operationTitleSource"
 	keyOrderSchemaPropertiesBy = "orderSchemaPropertiesBy"
 	keyPersistAuth             = "persistAuth"
-	keyCustomCss               = "customCss"
+	keyCustomCSS               = "customCss"
 	keySources                 = "sources"
 )
 

@@ -179,7 +179,7 @@ func Test_PathTraversal_SymlinkProtection(t *testing.T) {
 		{
 			name:        "should validate final resolved path even with symlinks",
 			description: "Symlinks that resolve to paths outside root are blocked",
-			setup: func(t *testing.T) (string, string, func()) {
+			setup: func(_ *testing.T) (string, string, func()) {
 				// This test demonstrates that even if symlinks exist,
 				// the absolute path validation prevents escaping
 				return "../data/loader", "pet-store.yaml", func() {}
@@ -252,11 +252,9 @@ func Test_validatePath_DirectTests(t *testing.T) {
 			if tc.expectError {
 				require.Error(t, err)
 				require.ErrorContains(t, err, tc.errorContains)
-			} else {
+			} else if err != nil {
 				// May error for other reasons (file format, etc) but not path traversal
-				if err != nil {
-					require.NotContains(t, err.Error(), "path traversal detected")
-				}
+				require.NotContains(t, err.Error(), "path traversal detected")
 			}
 		})
 	}

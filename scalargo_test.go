@@ -460,8 +460,10 @@ func Test_CSS_Sanitization(t *testing.T) {
 			description: "Should remove event handler attributes",
 		},
 		{
-			name:         "Bypass 10: Multiple attack vectors combined",
-			maliciousCSS: "@import 'evil.css'; body { width: expression(alert(1)); background: url(javascript:void(0)); } </style><script>alert(2)</script><style> .test { color: url('data:text/html,<img src=x onerror=alert(3)>'); }",
+			name: "Bypass 10: Multiple attack vectors combined",
+			maliciousCSS: "@import 'evil.css'; body { width: expression(alert(1)); " +
+				"background: url(javascript:void(0)); } </style><script>alert(2)</script><style> " +
+				".test { color: url('data:text/html,<img src=x onerror=alert(3)>'); }",
 			shouldNotContain: []string{
 				"@import",
 				"expression(",
