@@ -137,6 +137,66 @@
             text-align: center;
         }
 
+        /* Category Group Styles */
+        .nav-category {
+            margin: 0 1rem 0.5rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 1rem;
+            color: var(--text-primary);
+            background: rgba(100, 116, 139, 0.1);
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            border: 1px solid transparent;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background: rgba(100, 116, 139, 0.2);
+            border-color: rgba(100, 116, 139, 0.3);
+        }
+
+        .category-header i.category-icon {
+            margin-right: 0.75rem;
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .category-header i.chevron {
+            margin-left: auto;
+            transition: transform 0.2s ease;
+            font-size: 0.875rem;
+        }
+
+        .category-header.expanded i.chevron {
+            transform: rotate(90deg);
+        }
+
+        .category-items {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding-left: 0.5rem;
+        }
+
+        .category-items.expanded {
+            max-height: 2000px;
+        }
+
+        .category-items .nav-item {
+            margin: 0.5rem 0;
+        }
+
+        .category-items .nav-link {
+            padding-left: 2.5rem;
+        }
+
         /* Main Content Styles */
         .main-content {
             flex: 1;
@@ -418,6 +478,58 @@
             font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
             font-size: 1.3rem;
         }
+
+        /* Configuration Details Styles */
+        .config-details {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--dark-card);
+            border: 1px solid var(--dark-border);
+            border-radius: 0.75rem;
+        }
+
+        .config-details h3 {
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .config-item {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: rgba(59, 130, 246, 0.05);
+            border-left: 3px solid var(--primary-color);
+            border-radius: 0.375rem;
+        }
+
+        .config-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .config-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 0.9375rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .config-type {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .config-description {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -474,6 +586,13 @@
                             <pre class="code-pre"><code>// Select an example from the sidebar to view the code</code></pre>
                         </div>
                     </div>
+                    <div id="configDetails" class="config-details" style="display: none;">
+                        <h3>
+                            <i class="fas fa-info-circle"></i>
+                            Configuration Options Used
+                        </h3>
+                        <div id="configItems"></div>
+                    </div>
                 </div>
 
                 <div class="tab-content preview">
@@ -483,7 +602,9 @@
         </div>
     </main>
 <script type="application/javascript">
-    const examples = {{ . }};
+    // Data injected from docs/main.go
+    const examples = {{ .Examples }};
+    const configDescriptions = {{ .ConfigDescriptions }};
 
     // Mobile menu functionality
     function initMobileMenu() {
@@ -561,6 +682,36 @@
         });
     }
 
+    // Extract and display configuration details
+    function displayConfigDetails(code) {
+        const configDetailsDiv = document.getElementById('configDetails');
+        const configItemsDiv = document.getElementById('configItems');
+
+        // Find all configuration functions used in the code
+        const usedConfigs = [];
+        for (const [funcName, config] of Object.entries(configDescriptions)) {
+            if (code.includes(funcName)) {
+                usedConfigs.push(config);
+            }
+        }
+
+        // Remove duplicates based on Name field (capitalize first letter to match JSON)
+        const uniqueConfigs = Array.from(new Map(usedConfigs.map(c => [c.Name, c])).values());
+
+        if (uniqueConfigs.length > 0) {
+            configItemsDiv.innerHTML = uniqueConfigs.map(config => `
+                <div class="config-item">
+                    <div class="config-name">${config.name}</div>
+                    <div class="config-type">Type: ${config.type}</div>
+                    <div class="config-description">${config.description}</div>
+                </div>
+            `).join('');
+            configDetailsDiv.style.display = 'block';
+        } else {
+            configDetailsDiv.style.display = 'none';
+        }
+    }
+
     // Render example content
     function renderExample(example, idx) {
         // Inject localStorage polyfill before Scalar scripts
@@ -606,6 +757,9 @@
         document.getElementById('previewFrame').src = URL.createObjectURL(blob);
         document.querySelector('.code-pre code').innerHTML = hljs.highlight(example.code, {language: 'go'}).value;
         document.querySelector('.code-header .description').textContent = example.description;
+
+        // Display configuration details
+        displayConfigDetails(example.code);
         
         // Update sidebar active states
         document.querySelectorAll('.sidebar-nav .nav-link').forEach(el => {
@@ -623,21 +777,71 @@
         setTimeout(() => codeContent.classList.add('fade-in'), 10);
     }
 
+    // Create or get category group
+    function getOrCreateCategory(categoryName, categoryIcon = 'fa-folder') {
+        const sidebar = document.querySelector('.sidebar-nav');
+        const categoryId = `category-${categoryName.toLowerCase().replace(/\s+/g, '-')}`;
+
+        let category = document.getElementById(categoryId);
+        if (category) {
+            return category.querySelector('.category-items');
+        }
+
+        // Create new category
+        const categoryDiv = document.createElement('div');
+        categoryDiv.classList.add('nav-category');
+        categoryDiv.id = categoryId;
+
+        const header = document.createElement('div');
+        header.classList.add('category-header');
+
+        const icon = document.createElement('i');
+        icon.classList.add('fas', categoryIcon, 'category-icon');
+
+        const title = document.createElement('span');
+        title.textContent = categoryName;
+
+        const chevron = document.createElement('i');
+        chevron.classList.add('fas', 'fa-chevron-right', 'chevron');
+
+        header.appendChild(icon);
+        header.appendChild(title);
+        header.appendChild(chevron);
+
+        const itemsContainer = document.createElement('div');
+        itemsContainer.classList.add('category-items');
+
+        // Toggle category on click
+        header.addEventListener('click', () => {
+            header.classList.toggle('expanded');
+            itemsContainer.classList.toggle('expanded');
+        });
+
+        categoryDiv.appendChild(header);
+        categoryDiv.appendChild(itemsContainer);
+        sidebar.appendChild(categoryDiv);
+
+        return itemsContainer;
+    }
+
     // Add example to sidebar
     function addExampleToSidebar(example, idx) {
         const li = document.createElement('li');
         li.classList.add('nav-item');
-        
+
         const a = document.createElement('a');
         a.classList.add('nav-link', `example_${idx}`);
         a.href = '#';
-        
+
         const icon = document.createElement('i');
-        icon.classList.add('fas', 'fa-play-circle');
-        
+        // Brand icons (like fa-github) use 'fab', others use 'fas'
+        const brandIcons = ['fa-github', 'fa-google', 'fa-facebook', 'fa-twitter', 'fa-gitlab', 'fa-bitbucket', 'fa-linkedin'];
+        const iconClass = brandIcons.includes(example.icon) ? 'fab' : 'fas';
+        icon.classList.add(iconClass, example.icon || 'fa-play-circle');
+
         const span = document.createElement('span');
         span.textContent = example.name;
-        
+
         a.appendChild(icon);
         a.appendChild(span);
         li.appendChild(a);
@@ -647,7 +851,13 @@
             renderExample(example, idx);
         });
 
-        document.querySelector('.sidebar-nav').appendChild(li);
+        // Add to category or directly to sidebar
+        if (example.category) {
+            const categoryContainer = getOrCreateCategory(example.category, example.categoryIcon || 'fa-folder');
+            categoryContainer.appendChild(li);
+        } else {
+            document.querySelector('.sidebar-nav').appendChild(li);
+        }
     }
 
     // Loading state management
@@ -682,6 +892,14 @@
                 addExampleToSidebar(example, idx);
             });
             renderExample(examples[0], 0);
+
+            // Expand first category by default
+            setTimeout(() => {
+                const firstCategory = document.querySelector('.category-header');
+                if (firstCategory) {
+                    firstCategory.click();
+                }
+            }, 50);
 
             // Remove welcome link after examples are loaded
             setTimeout(() => {

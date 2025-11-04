@@ -86,6 +86,71 @@ cd url_based_loading && go run main.go
 - Custom styling for external specs
 - Error handling for remote resources
 
+### 7. Authentication Examples 🆕 (`authentication.go`)
+**Use Case**: Comprehensive authentication configuration for modern APIs (NEW in Phase 1).
+
+**What it demonstrates**:
+- **API Key Authentication**: Header, query parameter, and cookie-based
+- **HTTP Basic & Bearer**: Standard HTTP authentication methods
+- **OAuth2 Flows**: Authorization Code, Client Credentials, Implicit, Password
+- **PKCE Support**: SHA-256, Plain, and Disabled modes
+- **Multiple Security Schemes**: Configure multiple auth methods with preferred selection
+- **Real-World Scenarios**: GitHub-style, Stripe-style, Auth0-style authentication
+
+**Example functions** (use as library):
+```go
+// API Key examples
+examples.ExampleAPIKeySimple()
+examples.ExampleAPIKeyCustomHeader()
+examples.ExampleAPIKeyQueryParameter()
+examples.ExampleAPIKeyCookie()
+
+// HTTP auth examples
+examples.ExampleHTTPBasicAuth()
+examples.ExampleHTTPBearerToken()
+
+// OAuth2 examples
+examples.ExampleOAuth2AuthorizationCode()
+examples.ExampleOAuth2ClientCredentials()
+examples.ExampleOAuth2WithAdvancedOptions()
+
+// Multiple auth schemes
+examples.ExampleMultipleSecuritySchemesWithOAuth2()
+
+// Real-world patterns
+examples.ExampleGitHubStyleAuth()
+examples.ExampleStripeStyleAuth()
+examples.ExampleAuth0StyleOAuth2()
+examples.ExampleProductionAPIWithFullAuth()
+```
+
+**Quick test server**:
+```go
+package main
+
+import (
+    "fmt"
+    "net/http"
+    "github.com/bdpiprava/scalar-go/examples"
+)
+
+func main() {
+    http.HandleFunc("/oauth2", serve(examples.ExampleOAuth2AuthorizationCode))
+    http.HandleFunc("/multi-auth", serve(examples.ExampleMultipleSecuritySchemesWithOAuth2))
+    http.HandleFunc("/github", serve(examples.ExampleGitHubStyleAuth))
+
+    fmt.Println("Visit: http://localhost:8080/oauth2")
+    http.ListenAndServe(":8080", nil)
+}
+
+func serve(fn func() (string, error)) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        html, _ := fn()
+        fmt.Fprint(w, html)
+    }
+}
+```
+
 ## 🚀 Quick Start
 
 1. **Clone the repository**:
@@ -141,6 +206,14 @@ examples/
 - **Dark Mode**: Force dark mode or hide toggle
 - **Search**: Custom hotkey configuration
 - **Client Examples**: Hide specific code examples
+
+### Authentication Options 🆕
+- **API Keys**: Header, query parameter, or cookie-based
+- **HTTP Auth**: Basic and Bearer token authentication
+- **OAuth2**: Authorization Code, Client Credentials, Implicit, Password flows
+- **PKCE**: SHA-256 (recommended), Plain, or Disabled
+- **Multiple Schemes**: Configure and prefer multiple auth methods
+- **Real-World Patterns**: GitHub, Stripe, Auth0 authentication styles
 
 ### Spec Loading Methods
 - **Directory**: Load from local file system

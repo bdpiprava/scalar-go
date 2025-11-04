@@ -2,8 +2,6 @@ package scalargo
 
 import (
 	"encoding/json"
-	"fmt"
-	"strings"
 
 	"github.com/bdpiprava/scalar-go/model"
 )
@@ -12,28 +10,49 @@ import (
 const DefaultCDN = "https://cdn.jsdelivr.net/npm/@scalar/api-reference"
 
 const (
-	keyTheme              = "theme"
-	keyLayout             = "layout"
-	keyProxy              = "proxy"
-	keyIsEditable         = "isEditable"
-	keyShowSidebar        = "showSidebar"
-	keyHideModels         = "hideModels"
-	keyHideDownloadButton = "hideDownloadButton"
-	keyDarkMode           = "darkMode"
-	keyFroceDarkMode      = "forceDarkModeState"
-	keyHideDarkModeToggle = "hideDarkModeToggle"
-	keySearchHotKey       = "searchHotKey"
-	keyHiddenClients      = "hiddenClients"
-	keyAuthentication     = "authentication"
-	keyPathRouting        = "pathRouting"
-	keyBaseServerURL      = "baseServerUrl"
-	keyWithDefaultFonts   = "withDefaultFonts"
-	keyServers            = "servers"
-	keyMetaData           = "metadata"
+	keyTheme                   = "theme"
+	keyLayout                  = "layout"
+	keyProxy                   = "proxy"
+	keyIsEditable              = "isEditable"
+	keyShowSidebar             = "showSidebar"
+	keyHideModels              = "hideModels"
+	keyHideDownloadButton      = "hideDownloadButton"
+	keyDarkMode                = "darkMode"
+	keyFroceDarkMode           = "forceDarkModeState"
+	keyHideDarkModeToggle      = "hideDarkModeToggle"
+	keySearchHotKey            = "searchHotKey"
+	keyHiddenClients           = "hiddenClients"
+	keyAuthentication          = "authentication"
+	keyPathRouting             = "pathRouting"
+	keyBaseServerURL           = "baseServerUrl"
+	keyWithDefaultFonts        = "withDefaultFonts"
+	keyServers                 = "servers"
+	keyMetaData                = "metadata"
+	keyHideSearch              = "hideSearch"
+	keyShowOperationID         = "showOperationId"
+	keyDefaultHTTPClient       = "defaultHttpClient"
+	keyTagsSorter              = "tagsSorter"
+	keyOperationsSorter        = "operationsSorter"
+	keyOperationTitleSource    = "operationTitleSource"
+	keyOrderSchemaPropertiesBy = "orderSchemaPropertiesBy"
+	keyPersistAuth             = "persistAuth"
+	keyCustomCSS               = "customCss"
+	keySources                 = "sources"
+	keyShowToolbar             = "showToolbar"
 )
 
 // SpecModifier is a function that can be used to override the spec
 type SpecModifier func(spec *model.Spec) *model.Spec
+
+// RenderMode defines how Scalar initializes in the HTML output
+type RenderMode string
+
+const (
+	// RenderModeDataAttribute uses data attributes on script tag (legacy, available for backward compatibility)
+	RenderModeDataAttribute RenderMode = "data-attribute"
+	// RenderModeJavaScriptAPI uses Scalar.createApiReference() JavaScript API (recommended, default)
+	RenderModeJavaScriptAPI RenderMode = "javascript-api"
+)
 
 type Options struct {
 	Configurations map[string]any
@@ -44,6 +63,9 @@ type Options struct {
 	SpecDirectory  string
 	SpecURL        string
 	SpecBytes      []byte
+	RenderMode     RenderMode
+	CustomHeadJS   string // Custom JavaScript to inject in <head> before Scalar CDN script
+	CustomBodyJS   string // Custom JavaScript to inject in <body> after Scalar initialization
 }
 
 type Option func(*Options)
@@ -123,10 +145,12 @@ func WithHiddenClients(hiddenClients ...string) func(*Options) {
 	return func(o *Options) {
 		value := o.Configurations[keyHiddenClients]
 
-		// WithHideAllClients() takes precedence over this
-		if strings.ToLower(fmt.Sprintf("%v", value)) != "true" {
-			o.Configurations[keyHiddenClients] = hiddenClients
+		// Return if value is set to true, as WithHideAllClients() takes precedence over this
+		if val, ok := value.(bool); ok && val {
+			return
 		}
+
+		o.Configurations[keyHiddenClients] = hiddenClients
 	}
 }
 
@@ -219,5 +243,28 @@ func WithAuthenticationOpts(opts ...AuthOption) func(*Options) {
 		if err == nil {
 			o.Configurations[keyAuthentication] = string(content)
 		}
+	}
+}
+
+// WithRenderMode sets the rendering mode for the Scalar UI
+func WithRenderMode(mode RenderMode) func(*Options) {
+	return func(o *Options) {
+		o.RenderMode = mode
+	}
+}
+
+// WithCustomHeadJS injects custom JavaScript in the <head> before the Scalar CDN script
+// Note: User is responsible for XSS prevention in custom JS
+func WithCustomHeadJS(js string) func(*Options) {
+	return func(o *Options) {
+		o.CustomHeadJS = js
+	}
+}
+
+// WithCustomBodyJS injects custom JavaScript in the <body> after Scalar initialization
+// Note: User is responsible for XSS prevention in custom JS
+func WithCustomBodyJS(js string) func(*Options) {
+	return func(o *Options) {
+		o.CustomBodyJS = js
 	}
 }

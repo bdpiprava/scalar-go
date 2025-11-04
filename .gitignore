@@ -7,3 +7,4 @@ build
 docs/.jekyll-cache
 .bundles
 .claude
+coverage*.txt
