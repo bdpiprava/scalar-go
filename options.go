@@ -48,9 +48,9 @@ type SpecModifier func(spec *model.Spec) *model.Spec
 type RenderMode string
 
 const (
-	// RenderModeDataAttribute uses data attributes on script tag (legacy, default for backward compatibility)
+	// RenderModeDataAttribute uses data attributes on script tag (legacy, available for backward compatibility)
 	RenderModeDataAttribute RenderMode = "data-attribute"
-	// RenderModeJavaScriptAPI uses Scalar.createApiReference() JavaScript API (recommended)
+	// RenderModeJavaScriptAPI uses Scalar.createApiReference() JavaScript API (recommended, default)
 	RenderModeJavaScriptAPI RenderMode = "javascript-api"
 )
 

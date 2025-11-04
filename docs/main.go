@@ -31,6 +31,17 @@ type Example struct {
 	Icon         string `json:"icon,omitempty"`
 }
 
+type ConfigDescription struct {
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description"`
+}
+
+type TemplateData struct {
+	Examples           []*Example                   `json:"examples"`
+	ConfigDescriptions map[string]ConfigDescription `json:"configDescriptions"`
+}
+
 const loadFromManyFiles = "./data/loader-multiple-files"
 
 // exampleForSpecDir is an example of how to use the scalargo package to load the spec from multiple files
@@ -141,7 +152,12 @@ func buildStatic() {
 		ex.Name = fmt.Sprintf("%d. %s", i+1, ex.Name)
 	}
 
-	err = tmpl.Execute(f, exs)
+	templateData := TemplateData{
+		Examples:           exs,
+		ConfigDescriptions: getConfigDescriptions(),
+	}
+
+	err = tmpl.Execute(f, templateData)
 	if err != nil {
 		panic(err)
 	}
@@ -214,6 +230,323 @@ func (f *FindBlockByLine) Visit(node ast.Node) ast.Visitor {
 		}
 	}
 	return f
+}
+
+func getConfigDescriptions() map[string]ConfigDescription {
+	return map[string]ConfigDescription{
+		"WithTheme": {
+			Name:        "theme",
+			Type:        "string",
+			Description: "Color scheme for the reference (default, alternate, moon, purple, solarized, bluePlanet, deepSpace, saturn, kepler, mars).",
+		},
+		"WithLayout": {
+			Name:        "layout",
+			Type:        "'modern' | 'classic'",
+			Description: "Layout style for the reference. Modern provides a contemporary design, while classic offers a traditional look.",
+		},
+		"WithDarkMode": {
+			Name:        "darkMode",
+			Type:        "boolean",
+			Description: "Initial dark mode state. Set to true to enable dark mode by default.",
+		},
+		"WithHideModels": {
+			Name:        "hideModels",
+			Type:        "boolean",
+			Description: "Hides models in sidebar, search, and content to focus on API endpoints.",
+		},
+		"WithHideSearch": {
+			Name:        "hideSearch",
+			Type:        "boolean",
+			Description: "Hides the sidebar search bar when set to true.",
+		},
+		"WithHideDownloadButton": {
+			Name:        "hideDownloadButton",
+			Type:        "boolean",
+			Description: "Hides the download OpenAPI spec button from the interface.",
+		},
+		"WithSidebarVisibility": {
+			Name:        "showSidebar",
+			Type:        "boolean",
+			Description: "Controls sidebar visibility. Set to false to hide the sidebar for a cleaner layout.",
+		},
+		"WithHiddenClients": {
+			Name:        "hiddenClients",
+			Type:        "array | boolean",
+			Description: "Controls which HTTP clients are hidden from code examples. Pass an array of client names to hide specific ones, or true to hide all.",
+		},
+		"WithHideAllClients": {
+			Name:        "hiddenClients",
+			Type:        "boolean",
+			Description: "Hides all HTTP client code examples from the documentation.",
+		},
+		"WithOverrideCSS": {
+			Name:        "customCss",
+			Type:        "string",
+			Description: "Custom CSS applied directly to the component for branded documentation styling.",
+		},
+		"WithCustomCSS": {
+			Name:        "customCss",
+			Type:        "string",
+			Description: "Custom CSS applied via configuration object for styling the reference.",
+		},
+		"WithProxy": {
+			Name:        "proxyUrl",
+			Type:        "string",
+			Description: "Proxy URL for cross-origin API requests.",
+		},
+		"WithBaseServerURL": {
+			Name:        "baseServerURL",
+			Type:        "string",
+			Description: "Prefix all relative servers with this base URL.",
+		},
+		"WithServers": {
+			Name:        "servers",
+			Type:        "Server[]",
+			Description: "Overrides servers from the OpenAPI document with custom server configurations.",
+		},
+		"WithAuthenticationOpts": {
+			Name:        "authentication",
+			Type:        "AuthenticationConfiguration",
+			Description: "Prefills credentials for users. Supports API Key, HTTP Bearer/Basic, and OAuth2 flows.",
+		},
+		"WithShowOperationID": {
+			Name:        "showOperationId",
+			Type:        "boolean",
+			Description: "Displays operation IDs in the UI for easier reference.",
+		},
+		"WithDefaultHTTPClient": {
+			Name:        "defaultHttpClient",
+			Type:        "HttpClientState",
+			Description: "Sets the default HTTP client for code examples (e.g., curl, fetch, axios).",
+		},
+		"WithTagsSorter": {
+			Name:        "tagsSorter",
+			Type:        "'alpha' | function",
+			Description: "Sorts tags alphanumerically or with custom function.",
+		},
+		"WithOperationsSorter": {
+			Name:        "operationsSorter",
+			Type:        "'alpha' | 'method' | function",
+			Description: "Sorts operations by alpha, method, or custom function.",
+		},
+		"WithOperationTitleSource": {
+			Name:        "operationTitleSource",
+			Type:        "'summary' | 'path'",
+			Description: "Uses operation summary or path for sidebar display.",
+		},
+		"WithOrderSchemaPropertiesBy": {
+			Name:        "orderSchemaPropertiesBy",
+			Type:        "'alpha' | 'preserve'",
+			Description: "Sorts properties alphabetically or preserves original order from spec.",
+		},
+		"WithPersistAuth": {
+			Name:        "persistAuth",
+			Type:        "boolean",
+			Description: "Persists authentication credentials in local storage across page reloads.",
+		},
+		"WithMultipleSources": {
+			Name:        "sources",
+			Type:        "DocumentSource[]",
+			Description: "Configure multiple OpenAPI document sources with version switcher.",
+		},
+		"WithCustomHeadJS": {
+			Name:        "customHeadJS",
+			Type:        "string",
+			Description: "Custom JavaScript injected in <head> before Scalar initialization.",
+		},
+		"WithCustomBodyJS": {
+			Name:        "customBodyJS",
+			Type:        "string",
+			Description: "Custom JavaScript injected in <body> after Scalar initialization.",
+		},
+		"WithRenderMode": {
+			Name:        "renderMode",
+			Type:        "'javascript-api' | 'data-attribute'",
+			Description: "Rendering mode for Scalar. JavaScript API (default) uses Scalar.createApiReference(), data-attribute (legacy) uses data attributes on script tag.",
+		},
+		"WithShowToolbar": {
+			Name:        "showToolbar",
+			Type:        "'always' | 'localhost' | 'never'",
+			Description: "Controls developer tools visibility. Set to \"always\" to show in all environments, \"localhost\" for local development only, or \"never\" to hide completely.",
+		},
+		"WithHideDarkModeToggle": {
+			Name:        "hideDarkModeToggle",
+			Type:        "boolean",
+			Description: "Hides the dark mode toggle button from the interface.",
+		},
+		"WithForceDarkMode": {
+			Name:        "forceDarkModeState",
+			Type:        "'dark' | 'light'",
+			Description: "Forces dark mode to a specific state, preventing users from changing it.",
+		},
+		"WithSearchHotKey": {
+			Name:        "searchHotKey",
+			Type:        "string",
+			Description: "Key used with CMD/CTRL to open search (default: \"k\").",
+		},
+		"WithMetaDataOpts": {
+			Name:        "metaData",
+			Type:        "object",
+			Description: "Configures meta information including title, description, OG tags, and Twitter card data.",
+		},
+		"WithTitle": {
+			Name:        "metaData.title",
+			Type:        "string",
+			Description: "Sets the page title in metadata. Commonly used for browser tabs, SEO, and social media sharing.",
+		},
+		"WithKeyValue": {
+			Name:        "metaData.<key>",
+			Type:        "any",
+			Description: "Adds custom key-value pairs to metadata. Use for description, OG tags, Twitter cards, or any custom metadata fields.",
+		},
+		"WithSpecModifier": {
+			Name: "specModifier",
+			Type: "func(*model.Spec) *model.Spec",
+			Description: `Allows runtime modification of the OpenAPI specification before rendering. Use this to 
+dynamically add servers, modify info, add tags, or transform the spec structure.`,
+		},
+		// Authentication Options
+		"WithAPIKey": {
+			Name:        "apiKey",
+			Type:        "object",
+			Description: "Configures API key authentication. Supports header, query parameter, or cookie-based keys with customizable parameter names.",
+		},
+		"WithAPIKeyName": {
+			Name:        "apiKey.name",
+			Type:        "string",
+			Description: "Sets the parameter name for the API key (e.g., 'X-API-Key', 'api_key').",
+		},
+		"WithAPIKeyLocation": {
+			Name:        "apiKey.in",
+			Type:        "'header' | 'query' | 'cookie'",
+			Description: "Specifies where the API key is transmitted (header, query parameter, or cookie).",
+		},
+		"WithAPIKeyHeader": {
+			Name:        "apiKey",
+			Type:        "object",
+			Description: "Shorthand for header-based API key authentication with custom header name.",
+		},
+		"WithAPIKeyQuery": {
+			Name:        "apiKey",
+			Type:        "object",
+			Description: "Shorthand for query parameter-based API key authentication with custom parameter name.",
+		},
+		"WithAPIKeyCookie": {
+			Name:        "apiKey",
+			Type:        "object",
+			Description: "Shorthand for cookie-based API key authentication with custom cookie name.",
+		},
+		"WithHTTPBasicAuth": {
+			Name:        "securitySchemes.httpBasic",
+			Type:        "object",
+			Description: "Configures HTTP Basic authentication with username and password.",
+		},
+		"WithHTTPBearerToken": {
+			Name:        "securitySchemes.httpBearer",
+			Type:        "object",
+			Description: "Configures HTTP Bearer token authentication (commonly used for JWTs).",
+		},
+		"WithOAuth2AuthorizationCode": {
+			Name:        "securitySchemes.oauth2.flows.authorizationCode",
+			Type:        "object",
+			Description: "Configures OAuth2 Authorization Code flow with PKCE support. Best for web applications where users grant permission.",
+		},
+		"WithOAuth2ClientCredentials": {
+			Name:        "securitySchemes.oauth2.flows.clientCredentials",
+			Type:        "object",
+			Description: "Configures OAuth2 Client Credentials flow for service-to-service authentication.",
+		},
+		"WithOAuth2Implicit": {
+			Name:        "securitySchemes.oauth2.flows.implicit",
+			Type:        "object",
+			Description: "Configures OAuth2 Implicit flow (deprecated but supported for backward compatibility).",
+		},
+		"WithOAuth2Password": {
+			Name:        "securitySchemes.oauth2.flows.password",
+			Type:        "object",
+			Description: "Configures OAuth2 Password flow (deprecated but supported for backward compatibility).",
+		},
+		"WithOAuth2ClientID": {
+			Name:        "oauth2.clientId",
+			Type:        "string",
+			Description: "Sets the OAuth2 application client ID.",
+		},
+		"WithOAuth2ClientSecret": {
+			Name:        "oauth2.clientSecret",
+			Type:        "string",
+			Description: "Sets the OAuth2 application client secret (for Client Credentials flow).",
+		},
+		"WithOAuth2RedirectURI": {
+			Name:        "oauth2.redirectUri",
+			Type:        "string",
+			Description: "Sets the OAuth2 callback/redirect URI where authorization codes are sent.",
+		},
+		"WithOAuth2PKCE": {
+			Name:        "oauth2.usePkce",
+			Type:        "'S256' | 'plain' | 'no'",
+			Description: "Enables PKCE (Proof Key for Code Exchange) with specified mode. S256 (SHA-256) recommended for security.",
+		},
+		"WithOAuth2Scopes": {
+			Name:        "oauth2.selectedScopes",
+			Type:        "string[]",
+			Description: "Pre-selects OAuth2 permission scopes for authorization requests.",
+		},
+		"WithOAuth2CustomToken": {
+			Name:        "oauth2.tokenName",
+			Type:        "string",
+			Description: "Sets a custom token field name if the OAuth2 provider uses non-standard token response format.",
+		},
+		"WithOAuth2AdditionalAuthParams": {
+			Name:        "oauth2.securityQuery",
+			Type:        "object",
+			Description: "Adds custom query parameters to the OAuth2 authorization endpoint (e.g., audience, prompt).",
+		},
+		"WithOAuth2AdditionalTokenParams": {
+			Name:        "oauth2.securityBody",
+			Type:        "object",
+			Description: "Adds custom body parameters to the OAuth2 token endpoint (e.g., resource).",
+		},
+		"WithOAuth2CredentialsLocation": {
+			Name:        "oauth2.credentialsLocation",
+			Type:        "'header' | 'body'",
+			Description: "Specifies where client credentials are sent during token exchange (header or body).",
+		},
+		"WithSecurityScheme": {
+			Name:        "securitySchemes.<name>",
+			Type:        "object",
+			Description: "Adds a custom named security scheme. Allows defining multiple authentication methods with unique identifiers.",
+		},
+		"WithPreferredSecurityScheme": {
+			Name:        "preferredSecurityScheme",
+			Type:        "string | string[]",
+			Description: "Sets the default authentication method shown to users when multiple security schemes are available.",
+		},
+		"WithCustomSecurity": {
+			Name:        "customSecurity",
+			Type:        "boolean",
+			Description: "Enables custom security scheme configuration, allowing full control over authentication setup.",
+		},
+		"APIKeyScheme": {
+			Name:        "securityScheme",
+			Type:        "SecuritySchemeConfig",
+			Description: "Creates an API key security scheme configuration for use with WithSecurityScheme.",
+		},
+		"BearerScheme": {
+			Name:        "securityScheme",
+			Type:        "SecuritySchemeConfig",
+			Description: "Creates a bearer token security scheme configuration for use with WithSecurityScheme.",
+		},
+		"BasicScheme": {
+			Name:        "securityScheme",
+			Type:        "SecuritySchemeConfig",
+			Description: "Creates a basic auth security scheme configuration for use with WithSecurityScheme.",
+		},
+		"OAuth2Scheme": {
+			Name:        "securityScheme",
+			Type:        "SecuritySchemeConfig",
+			Description: "Creates an OAuth2 security scheme configuration for use with WithSecurityScheme.",
+		},
+	}
 }
 
 func getExamples() []*Example {
@@ -410,14 +743,14 @@ func getExamples() []*Example {
 		},
 
 		// ============================================================
-		// Spec Modification
+		// Specification Modification
 		// ============================================================
 		{
 			Name:         "Basic Modification",
 			Description:  `Dynamically modify API title, description, and version`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBasicModification)),
 			Output:       ignoreError(examples.ExampleBasicModification),
-			Category:     "Spec Modification",
+			Category:     "Specification Modification",
 			CategoryIcon: "fa-edit",
 			Icon:         "fa-pencil-alt",
 		},
@@ -426,7 +759,7 @@ func getExamples() []*Example {
 			Description:  `Add dynamic server URLs based on environment`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleServerModification)),
 			Output:       ignoreError(examples.ExampleServerModification),
-			Category:     "Spec Modification",
+			Category:     "Specification Modification",
 			CategoryIcon: "fa-edit",
 			Icon:         "fa-server",
 		},
@@ -435,7 +768,7 @@ func getExamples() []*Example {
 			Description:  `Add dynamic information and tags at runtime`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDynamicInfo)),
 			Output:       ignoreError(examples.ExampleDynamicInfo),
-			Category:     "Spec Modification",
+			Category:     "Specification Modification",
 			CategoryIcon: "fa-edit",
 			Icon:         "fa-sync-alt",
 		},
@@ -444,13 +777,13 @@ func getExamples() []*Example {
 			Description:  `Analyze and display API path statistics`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePathModification)),
 			Output:       ignoreError(examples.ExamplePathModification),
-			Category:     "Spec Modification",
+			Category:     "Specification Modification",
 			CategoryIcon: "fa-edit",
 			Icon:         "fa-route",
 		},
 
 		// ============================================================
-		// HTTP Server Integration
+		// Server Integration
 		// ============================================================
 		{
 			Name:         "Static Documentation",
@@ -526,14 +859,14 @@ func getExamples() []*Example {
 		},
 
 		// ============================================================
-		// External APIs
+		// External API Examples
 		// ============================================================
 		{
 			Name:         "Scalar Galaxy API",
 			Description:  `Load Scalar Galaxy API spec from CDN`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleScalarGalaxy)),
 			Output:       ignoreError(examples.ExampleScalarGalaxy),
-			Category:     "External APIs",
+			Category:     "External API Examples",
 			CategoryIcon: "fa-cloud-download-alt",
 			Icon:         "fa-space-shuttle",
 		},
@@ -542,7 +875,7 @@ func getExamples() []*Example {
 			Description:  `Classic Petstore OpenAPI specification`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePetstore)),
 			Output:       ignoreError(examples.ExamplePetstore),
-			Category:     "External APIs",
+			Category:     "External API Examples",
 			CategoryIcon: "fa-cloud-download-alt",
 			Icon:         "fa-paw",
 		},
@@ -551,7 +884,7 @@ func getExamples() []*Example {
 			Description:  `Complete GitHub REST API documentation`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleGitHubAPI)),
 			Output:       ignoreError(examples.ExampleGitHubAPI),
-			Category:     "External APIs",
+			Category:     "External API Examples",
 			CategoryIcon: "fa-cloud-download-alt",
 			Icon:         "fa-github",
 		},
@@ -560,7 +893,7 @@ func getExamples() []*Example {
 			Description:  `External API with custom titles and theming`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOpenAIAPI)),
 			Output:       ignoreError(examples.ExampleOpenAIAPI),
-			Category:     "External APIs",
+			Category:     "External API Examples",
 			CategoryIcon: "fa-cloud-download-alt",
 			Icon:         "fa-brain",
 		},
@@ -569,20 +902,20 @@ func getExamples() []*Example {
 			Description:  `External spec with comprehensive branding customization`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomizedExternal)),
 			Output:       ignoreError(examples.ExampleCustomizedExternal),
-			Category:     "External APIs",
+			Category:     "External API Examples",
 			CategoryIcon: "fa-cloud-download-alt",
 			Icon:         "fa-paint-brush",
 		},
 
 		// ============================================================
-		// Themes
+		// Theming & Appearance
 		// ============================================================
 		{
 			Name:         "Default Theme",
 			Description:  `Default theme with clean, modern styling`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeDefault)),
 			Output:       ignoreError(examples.ExampleThemeDefault),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-circle",
 		},
@@ -591,7 +924,7 @@ func getExamples() []*Example {
 			Description:  `Alternative theme with distinct styling`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeAlternate)),
 			Output:       ignoreError(examples.ExampleThemeAlternate),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-adjust",
 		},
@@ -600,7 +933,7 @@ func getExamples() []*Example {
 			Description:  `Dark theme with blue accents for modern interfaces`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeMoon)),
 			Output:       ignoreError(examples.ExampleThemeMoon),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-moon",
 		},
@@ -609,7 +942,7 @@ func getExamples() []*Example {
 			Description:  `Vibrant purple color scheme for distinctive docs`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemePurple)),
 			Output:       ignoreError(examples.ExampleThemePurple),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-crown",
 		},
@@ -618,7 +951,7 @@ func getExamples() []*Example {
 			Description:  `Solarized theme for excellent readability`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeSolarized)),
 			Output:       ignoreError(examples.ExampleThemeSolarized),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-sun",
 		},
@@ -627,7 +960,7 @@ func getExamples() []*Example {
 			Description:  `Oceanic blue theme with calming aesthetics`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeBluePlanet)),
 			Output:       ignoreError(examples.ExampleThemeBluePlanet),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-globe",
 		},
@@ -636,7 +969,7 @@ func getExamples() []*Example {
 			Description:  `Dark cosmic theme with stellar design elements`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeDeepSpace)),
 			Output:       ignoreError(examples.ExampleThemeDeepSpace),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-satellite",
 		},
@@ -645,7 +978,7 @@ func getExamples() []*Example {
 			Description:  `Planetary theme with sophisticated color scheme`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeSaturn)),
 			Output:       ignoreError(examples.ExampleThemeSaturn),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-ring",
 		},
@@ -654,7 +987,7 @@ func getExamples() []*Example {
 			Description:  `Astronomical theme inspired by space exploration`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeKepler)),
 			Output:       ignoreError(examples.ExampleThemeKepler),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-meteor",
 		},
@@ -663,21 +996,17 @@ func getExamples() []*Example {
 			Description:  `Red planet theme with warm, earthy tones`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleThemeMars)),
 			Output:       ignoreError(examples.ExampleThemeMars),
-			Category:     "Themes",
+			Category:     "Theming & Appearance",
 			CategoryIcon: "fa-palette",
 			Icon:         "fa-circle",
 		},
-
-		// ============================================================
-		// Layouts
-		// ============================================================
 		{
 			Name:         "Modern Layout",
 			Description:  `Modern layout with contemporary design`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutModern)),
 			Output:       ignoreError(examples.ExampleLayoutModern),
-			Category:     "Layouts",
-			CategoryIcon: "fa-th-large",
+			Category:     "Theming & Appearance",
+			CategoryIcon: "fa-palette",
 			Icon:         "fa-layer-group",
 		},
 		{
@@ -685,20 +1014,47 @@ func getExamples() []*Example {
 			Description:  `Classic layout with traditional design`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleLayoutClassic)),
 			Output:       ignoreError(examples.ExampleLayoutClassic),
-			Category:     "Layouts",
-			CategoryIcon: "fa-th-large",
+			Category:     "Theming & Appearance",
+			CategoryIcon: "fa-palette",
 			Icon:         "fa-columns",
+		},
+		{
+			Name:         "Dark Mode Options",
+			Description:  `Configure dark mode with multiple options`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDarkModeOptions)),
+			Output:       ignoreError(examples.ExampleDarkModeOptions),
+			Category:     "Theming & Appearance",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-moon",
+		},
+		{
+			Name:         "Custom CSS (Style Tag)",
+			Description:  `Apply custom CSS via style tag for branded documentation`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSS)),
+			Output:       ignoreError(examples.ExampleCustomCSS),
+			Category:     "Theming & Appearance",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-paint-brush",
+		},
+		{
+			Name:         "Custom CSS (Config)",
+			Description:  `Apply custom CSS through configuration object`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSSInConfig)),
+			Output:       ignoreError(examples.ExampleCustomCSSInConfig),
+			Category:     "Theming & Appearance",
+			CategoryIcon: "fa-palette",
+			Icon:         "fa-palette",
 		},
 
 		// ============================================================
-		// UI Options
+		// UI Visibility
 		// ============================================================
 		{
 			Name:         "Hide Sidebar",
 			Description:  `Cleaner layout with hidden sidebar`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideSidebar)),
 			Output:       ignoreError(examples.ExampleHideSidebar),
-			Category:     "UI Options",
+			Category:     "UI Visibility",
 			CategoryIcon: "fa-eye",
 			Icon:         "fa-eye-slash",
 		},
@@ -707,29 +1063,56 @@ func getExamples() []*Example {
 			Description:  `Focus on endpoints by hiding models section`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideModels)),
 			Output:       ignoreError(examples.ExampleHideModels),
-			Category:     "UI Options",
+			Category:     "UI Visibility",
 			CategoryIcon: "fa-eye",
 			Icon:         "fa-border-none",
 		},
 		{
-			Name:         "Dark Mode",
-			Description:  `Enable dark mode by default`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDarkMode)),
-			Output:       ignoreError(examples.ExampleDarkMode),
-			Category:     "UI Options",
+			Name:         "Hide Search",
+			Description:  `Hide the search functionality from the sidebar`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideSearch)),
+			Output:       ignoreError(examples.ExampleHideSearch),
+			Category:     "UI Visibility",
 			CategoryIcon: "fa-eye",
-			Icon:         "fa-adjust",
+			Icon:         "fa-search-minus",
+		},
+		{
+			Name:         "Hide Download Button",
+			Description:  `Hide the OpenAPI spec download button`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideDownloadButton)),
+			Output:       ignoreError(examples.ExampleHideDownloadButton),
+			Category:     "UI Visibility",
+			CategoryIcon: "fa-eye",
+			Icon:         "fa-download",
+		},
+		{
+			Name:         "Show Operation ID",
+			Description:  `Display operation IDs in the UI for easier reference`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleShowOperationID)),
+			Output:       ignoreError(examples.ExampleShowOperationID),
+			Category:     "UI Visibility",
+			CategoryIcon: "fa-eye",
+			Icon:         "fa-id-badge",
+		},
+		{
+			Name:         "Toolbar Visibility",
+			Description:  `Control developer toolbar visibility (always/localhost/never)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleToolbarVisibility)),
+			Output:       ignoreError(examples.ExampleToolbarVisibility),
+			Category:     "UI Visibility",
+			CategoryIcon: "fa-eye",
+			Icon:         "fa-tools",
 		},
 
 		// ============================================================
-		// Client Options
+		// Code Example Display
 		// ============================================================
 		{
 			Name:         "Hide All Clients",
 			Description:  `Hide all client code examples from documentation`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideAllClients)),
 			Output:       ignoreError(examples.ExampleHideAllClients),
-			Category:     "Client Options",
+			Category:     "Code Example Display",
 			CategoryIcon: "fa-code",
 			Icon:         "fa-eye-slash",
 		},
@@ -738,7 +1121,7 @@ func getExamples() []*Example {
 			Description:  `Display only curl and fetch client examples`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleShowOnlyCurlAndFetch)),
 			Output:       ignoreError(examples.ExampleShowOnlyCurlAndFetch),
-			Category:     "Client Options",
+			Category:     "Code Example Display",
 			CategoryIcon: "fa-code",
 			Icon:         "fa-terminal",
 		},
@@ -747,152 +1130,133 @@ func getExamples() []*Example {
 			Description:  `Display all available client code examples (default)`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleShowAllClients)),
 			Output:       ignoreError(examples.ExampleShowAllClients),
-			Category:     "Client Options",
+			Category:     "Code Example Display",
 			CategoryIcon: "fa-code",
 			Icon:         "fa-list",
-		},
-
-		// ============================================================
-		// Advanced Customization
-		// ============================================================
-		{
-			Name:         "Custom CSS",
-			Description:  `Apply custom CSS for branded documentation`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSS)),
-			Output:       ignoreError(examples.ExampleCustomCSS),
-			Category:     "Advanced",
-			CategoryIcon: "fa-cogs",
-			Icon:         "fa-paint-brush",
-		},
-		{
-			Name:         "All Options Combined",
-			Description:  `Comprehensive example combining multiple options`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAllOptions)),
-			Output:       ignoreError(examples.ExampleAllOptions),
-			Category:     "Advanced",
-			CategoryIcon: "fa-cogs",
-			Icon:         "fa-star",
-		},
-
-		// ============================================================
-		// JavaScript API Mode
-		// ============================================================
-		{
-			Name:         "JavaScript API Mode",
-			Description:  `Use JavaScript API rendering mode for enhanced control`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleJavaScriptAPIMode)),
-			Output:       ignoreError(examples.ExampleJavaScriptAPIMode),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-code",
-		},
-		{
-			Name:         "Custom JavaScript Injection",
-			Description:  `Inject custom JavaScript in head and body for advanced initialization`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleJavaScriptAPIWithCustomJS)),
-			Output:       ignoreError(examples.ExampleJavaScriptAPIWithCustomJS),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-file-code",
-		},
-		{
-			Name:         "Display Configuration",
-			Description:  `Configure search visibility and operation ID display`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideSearchAndShowOperationID)),
-			Output:       ignoreError(examples.ExampleHideSearchAndShowOperationID),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-sliders-h",
 		},
 		{
 			Name:         "Default HTTP Client",
 			Description:  `Set default HTTP client for code examples`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDefaultHTTPClient)),
 			Output:       ignoreError(examples.ExampleDefaultHTTPClient),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
+			Category:     "Code Example Display",
+			CategoryIcon: "fa-code",
 			Icon:         "fa-network-wired",
 		},
+
+		// ============================================================
+		// Display Options
+		// ============================================================
 		{
-			Name:         "Sorting Options",
-			Description:  `Configure sorting for tags, operations, and schema properties`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleSortingOptions)),
-			Output:       ignoreError(examples.ExampleSortingOptions),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
+			Name:         "Tags Sorter",
+			Description:  `Sort tags alphabetically in the sidebar`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleTagsSorter)),
+			Output:       ignoreError(examples.ExampleTagsSorter),
+			Category:     "Display Options",
+			CategoryIcon: "fa-sliders-h",
+			Icon:         "fa-sort-alpha-down",
+		},
+		{
+			Name:         "Operations Sorter",
+			Description:  `Sort operations by method or alphabetically`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOperationsSorter)),
+			Output:       ignoreError(examples.ExampleOperationsSorter),
+			Category:     "Display Options",
+			CategoryIcon: "fa-sliders-h",
 			Icon:         "fa-sort",
+		},
+		{
+			Name:         "Operation Title Source",
+			Description:  `Choose operation title source (summary or path)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleOperationTitleSource)),
+			Output:       ignoreError(examples.ExampleOperationTitleSource),
+			Category:     "Display Options",
+			CategoryIcon: "fa-sliders-h",
+			Icon:         "fa-heading",
+		},
+		{
+			Name:         "Schema Properties Order",
+			Description:  `Control schema property order (alphabetical or preserve)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleSchemaPropertiesOrder)),
+			Output:       ignoreError(examples.ExampleSchemaPropertiesOrder),
+			Category:     "Display Options",
+			CategoryIcon: "fa-sliders-h",
+			Icon:         "fa-list-ol",
+		},
+
+		// ============================================================
+		// Specification Loading
+		// ============================================================
+		{
+			Name:         "Multiple API Sources",
+			Description:  `Configure multiple OpenAPI document sources with version switcher`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultipleSources)),
+			Output:       ignoreError(examples.ExampleMultipleSources),
+			Category:     "Specification Loading",
+			CategoryIcon: "fa-file-code",
+			Icon:         "fa-layer-group",
+		},
+
+		// ============================================================
+		// Advanced Features
+		// ============================================================
+		{
+			Name:         "Custom JavaScript Injection",
+			Description:  `Inject custom JavaScript in head and body for advanced initialization`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleJavaScriptAPIWithCustomJS)),
+			Output:       ignoreError(examples.ExampleJavaScriptAPIWithCustomJS),
+			Category:     "Advanced Features",
+			CategoryIcon: "fa-cogs",
+			Icon:         "fa-file-code",
 		},
 		{
 			Name:         "Persist Authentication",
 			Description:  `Enable authentication persistence in localStorage`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePersistAuth)),
 			Output:       ignoreError(examples.ExamplePersistAuth),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
+			Category:     "Advanced Features",
+			CategoryIcon: "fa-cogs",
 			Icon:         "fa-save",
 		},
 		{
-			Name:         "Multiple API Sources",
-			Description:  `Configure multiple OpenAPI document sources with version switcher`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultipleSources)),
-			Output:       ignoreError(examples.ExampleMultipleSources),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-layer-group",
-		},
-		{
-			Name:         "Custom CSS via Config",
-			Description:  `Apply custom CSS through configuration object`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSSInConfig)),
-			Output:       ignoreError(examples.ExampleCustomCSSInConfig),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-palette",
-		},
-		{
 			Name:         "Advanced Configuration",
-			Description:  `Comprehensive JavaScript API configuration with multiple features`,
+			Description:  `Comprehensive configuration with multiple features`,
 			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAdvancedConfiguration)),
 			Output:       ignoreError(examples.ExampleAdvancedConfiguration),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
+			Category:     "Advanced Features",
+			CategoryIcon: "fa-cogs",
 			Icon:         "fa-tools",
 		},
 		{
-			Name:         "Backward Compatibility",
-			Description:  `Verify existing code works without changes (data-attribute mode)`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBackwardCompatibility)),
-			Output:       ignoreError(examples.ExampleBackwardCompatibility),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-check-circle",
+			Name:         "All Options Combined",
+			Description:  `Comprehensive example combining multiple options`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAllOptions)),
+			Output:       ignoreError(examples.ExampleAllOptions),
+			Category:     "Advanced Features",
+			CategoryIcon: "fa-cogs",
+			Icon:         "fa-star",
+		},
+
+		// ============================================================
+		// Rendering Modes
+		// ============================================================
+		{
+			Name:         "JavaScript API Mode",
+			Description:  `Use JavaScript API rendering mode (default, recommended)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleJavaScriptAPIMode)),
+			Output:       ignoreError(examples.ExampleJavaScriptAPIMode),
+			Category:     "Rendering Modes",
+			CategoryIcon: "fa-exchange-alt",
+			Icon:         "fa-code",
 		},
 		{
-			Name:         "Toolbar Always Visible",
-			Description:  `Enable developer toolbar in all environments for debugging`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleToolbarAlwaysVisible)),
-			Output:       ignoreError(examples.ExampleToolbarAlwaysVisible),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-wrench",
-		},
-		{
-			Name:         "Toolbar Localhost Only",
-			Description:  `Show developer toolbar only on localhost (Scalar default behavior)`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleToolbarLocalhostOnly)),
-			Output:       ignoreError(examples.ExampleToolbarLocalhostOnly),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-laptop-code",
-		},
-		{
-			Name:         "Toolbar Hidden",
-			Description:  `Hide developer toolbar completely (this library's default)`,
-			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleToolbarNeverVisible)),
-			Output:       ignoreError(examples.ExampleToolbarNeverVisible),
-			Category:     "JavaScript API",
-			CategoryIcon: "fa-js",
-			Icon:         "fa-eye-slash",
+			Name:         "Data Attribute Mode",
+			Description:  `Use legacy data-attribute rendering mode for backward compatibility`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDataAttributeMode)),
+			Output:       ignoreError(examples.ExampleDataAttributeMode),
+			Category:     "Rendering Modes",
+			CategoryIcon: "fa-exchange-alt",
+			Icon:         "fa-clock",
 		},
 	}
 }

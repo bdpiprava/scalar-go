@@ -28,7 +28,6 @@ func ExampleGitHubAPI() (string, error) {
 			scalargo.WithTitle("GitHub REST API"),
 			scalargo.WithKeyValue("description", "Complete GitHub REST API documentation"),
 		),
-		scalargo.WithTheme(scalargo.ThemeDefault),
 	)
 }
 
@@ -41,7 +40,6 @@ func ExampleOpenAIAPI() (string, error) {
 			scalargo.WithKeyValue("description", "Example of loading external API documentation"),
 			scalargo.WithKeyValue("note", "This is a demo using Scalar Galaxy spec"),
 		),
-		scalargo.WithTheme(scalargo.ThemeAlternate),
 		scalargo.WithLayout(scalargo.LayoutClassic),
 	)
 }
@@ -90,7 +88,6 @@ func ExampleCustomizedExternal() (string, error) {
 			scalargo.WithKeyValue("company", "Your Company Name"),
 			scalargo.WithKeyValue("customized", "true"),
 		),
-		scalargo.WithTheme(scalargo.ThemeMoon),
 		scalargo.WithLayout(scalargo.LayoutModern),
 		scalargo.WithOverrideCSS(customCSS),
 		scalargo.WithDarkMode(),

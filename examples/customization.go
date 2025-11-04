@@ -143,6 +143,29 @@ func ExampleDarkMode() (string, error) {
 	)
 }
 
+// ExampleDarkModeOptions demonstrates comprehensive dark mode configuration
+func ExampleDarkModeOptions() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		// WithDarkMode: Enable dark mode by default (user can still toggle)
+		scalargo.WithDarkMode(),
+		// WithHideDarkModeToggle: Hide the dark mode toggle button
+		// scalargo.WithHideDarkModeToggle(),
+		// WithForceDarkMode: Force dark mode to specific state, preventing user changes
+		// scalargo.WithForceDarkMode(),
+	)
+}
+
+// ExampleHideDownloadButton demonstrates hiding the OpenAPI spec download button
+func ExampleHideDownloadButton() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithHideDownloadButton(),
+	)
+}
+
 // Advanced examples - self-contained spec functions
 
 // ExampleCustomCSS demonstrates custom CSS styling for branded documentation
@@ -153,12 +176,12 @@ func ExampleCustomCSS() (string, error) {
 			color: #e74c3c !important;
 			font-weight: bold !important;
 		}
-		
+
 		.api-client__request {
 			background-color: #f8f9fa !important;
 			border-left: 4px solid #007bff !important;
 		}
-		
+
 		/* Custom button styling */
 		button {
 			border-radius: 8px !important;
@@ -169,7 +192,6 @@ func ExampleCustomCSS() (string, error) {
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
 		scalargo.WithOverrideCSS(customCSS),
-		scalargo.WithTheme(scalargo.ThemeDefault),
 	)
 }
 
@@ -245,7 +267,6 @@ func ExampleAllOptions() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithTheme(scalargo.ThemePurple),
 		scalargo.WithLayout(scalargo.LayoutModern),
 		scalargo.WithDarkMode(),
 		scalargo.WithHideDownloadButton(),

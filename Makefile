@@ -9,7 +9,7 @@ WARN_COLOR=\033[33;01m
 tests:
 	@echo "$(OK_COLOR)==> Running tests...$(NO_COLOR)"
 	@go install gotest.tools/gotestsum@latest
-	@gotestsum --format=testname -- -v -coverprofile=coverage_unit.txt -coverpkg=./...
+	@gotestsum --format=testname -- -v -race=1 -coverprofile=coverage_unit.txt -coverpkg=./...
 
 # To generate static files
 generate-doc:

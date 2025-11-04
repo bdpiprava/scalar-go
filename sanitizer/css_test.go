@@ -395,7 +395,7 @@ func TestCSS_MultiPassSanitization(t *testing.T) {
 				.class5 { content: '&lt;script&gt;alert(6)&lt;/script&gt;'; }
 			`,
 			want: `
-
+				
 				.class1 { width: ); }
 				.class2 { background: url(text/html,alert(2)'); }
 				alert(3)

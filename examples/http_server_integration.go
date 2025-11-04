@@ -25,7 +25,6 @@ func ExampleDynamicDocumentation() (string, error) {
 			scalargo.WithKeyValue("environment", getEnvironment()),
 			scalargo.WithKeyValue("generated", time.Now().Format(time.RFC3339)),
 		),
-		scalargo.WithTheme(scalargo.ThemeMoon),
 		scalargo.WithLayout(scalargo.LayoutModern),
 	)
 }
@@ -38,7 +37,6 @@ func ExampleURLBasedDocumentation() (string, error) {
 			scalargo.WithTitle("External API Documentation"),
 			scalargo.WithKeyValue("source", "External URL"),
 		),
-		scalargo.WithTheme(scalargo.ThemePurple),
 	)
 }
 
@@ -52,7 +50,6 @@ func ExampleAPIV1() (string, error) {
 			scalargo.WithKeyValue("version", "1.0.0"),
 			scalargo.WithKeyValue("deprecated", "false"),
 		),
-		scalargo.WithTheme(scalargo.ThemeDefault),
 	)
 }
 
@@ -65,7 +62,6 @@ func ExampleAPIV2() (string, error) {
 			scalargo.WithKeyValue("version", "2.0.0"),
 			scalargo.WithKeyValue("deprecated", "false"),
 		),
-		scalargo.WithTheme(scalargo.ThemeSolarized),
 		scalargo.WithDarkMode(),
 	)
 }
@@ -82,7 +78,6 @@ func ExampleAPIV1WithAuth() (string, error) {
 		scalargo.WithAuthenticationOpts(
 			scalargo.WithAPIKey("v1-api-key-demo"),
 		),
-		scalargo.WithTheme(scalargo.ThemeDefault),
 	)
 }
 
@@ -103,7 +98,6 @@ func ExampleAPIV2WithOAuth2() (string, error) {
 				scalargo.WithOAuth2Scopes("pets:read", "pets:write"),
 			),
 		),
-		scalargo.WithTheme(scalargo.ThemeSolarized),
 		scalargo.WithDarkMode(),
 	)
 }
@@ -164,7 +158,6 @@ func ExampleProductionAPI() (string, error) {
 			),
 			scalargo.WithPreferredSecurityScheme("oauth2"),
 		),
-		scalargo.WithTheme(scalargo.ThemeDeepSpace),
 		scalargo.WithDarkMode(),
 		scalargo.WithLayout(scalargo.LayoutModern),
 	)

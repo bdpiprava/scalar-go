@@ -10,12 +10,17 @@ import (
 )
 
 func TestWithRenderMode(t *testing.T) {
-	t.Run("should default to data-attribute mode", func(t *testing.T) {
+	t.Run("should default to JavaScript API mode", func(t *testing.T) {
 		options := buildOptions()
+		assert.Equal(t, RenderModeJavaScriptAPI, options.RenderMode)
+	})
+
+	t.Run("should allow setting data-attribute mode for backward compatibility", func(t *testing.T) {
+		options := buildOptions(WithRenderMode(RenderModeDataAttribute))
 		assert.Equal(t, RenderModeDataAttribute, options.RenderMode)
 	})
 
-	t.Run("should set JavaScript API mode", func(t *testing.T) {
+	t.Run("should explicitly set JavaScript API mode", func(t *testing.T) {
 		options := buildOptions(WithRenderMode(RenderModeJavaScriptAPI))
 		assert.Equal(t, RenderModeJavaScriptAPI, options.RenderMode)
 	})
@@ -42,8 +47,8 @@ func TestRenderMode_JavaScriptAPI_WithURL(t *testing.T) {
 	)
 
 	require.NoError(t, err)
-	assert.Contains(t, html, `<div id="api-reference"></div>`)
-	assert.Contains(t, html, `Scalar.createApiReference('#api-reference',`)
+	assert.Contains(t, html, `<div id="app"></div>`)
+	assert.Contains(t, html, `Scalar.createApiReference('#app',`)
 	assert.Contains(t, html, `"url":"https://example.com/openapi.json"`)
 	assert.NotContains(t, html, `<script id="api-reference"`)
 	assert.NotContains(t, html, `data-url=`)
@@ -57,8 +62,8 @@ func TestRenderMode_JavaScriptAPI_WithDirectory(t *testing.T) {
 	)
 
 	require.NoError(t, err)
-	assert.Contains(t, html, `<div id="api-reference"></div>`)
-	assert.Contains(t, html, `Scalar.createApiReference('#api-reference',`)
+	assert.Contains(t, html, `<div id="app"></div>`)
+	assert.Contains(t, html, `Scalar.createApiReference('#app',`)
 	assert.Contains(t, html, `"content":"{`)     // Verify content field with JSON
 	assert.Contains(t, html, `Swagger Petstore`) // Verify spec title is in the HTML
 	assert.NotContains(t, html, `<script id="api-reference"`)
@@ -336,9 +341,24 @@ func TestBuildInitScript_WithSpecModifier(t *testing.T) {
 }
 
 func TestBackwardCompatibility_DefaultMode(t *testing.T) {
-	// When no render mode is specified, should use data-attribute mode
+	// When no render mode is specified, should use JavaScript API mode (new default)
 	html, err := NewV2(
 		WithSpecURL("https://example.com/openapi.json"),
+	)
+
+	require.NoError(t, err)
+	// Should use JavaScript API mode (new default)
+	assert.Contains(t, html, `<div id="app"></div>`)
+	assert.Contains(t, html, `Scalar.createApiReference('#app',`)
+	assert.NotContains(t, html, `<script id="api-reference"`)
+	assert.NotContains(t, html, `data-url=`)
+}
+
+func TestBackwardCompatibility_ExplicitDataAttribute(t *testing.T) {
+	// Explicitly requesting data-attribute mode should still work
+	html, err := NewV2(
+		WithSpecURL("https://example.com/openapi.json"),
+		WithRenderMode(RenderModeDataAttribute),
 	)
 
 	require.NoError(t, err)

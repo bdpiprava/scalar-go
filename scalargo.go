@@ -85,7 +85,7 @@ func buildOptions(opts ...Option) *Options {
 
 		CDN:          DefaultCDN,
 		BaseFileName: "api.yaml",
-		RenderMode:   RenderModeDataAttribute, // Default to data-attribute for backward compatibility
+		RenderMode:   RenderModeJavaScriptAPI, // Default to JavaScript API (recommended)
 	}
 
 	for _, opt := range opts {
@@ -160,17 +160,17 @@ func renderHTML(title, cssOverride, specScript, cdn, customHeadJS, customBodyJS 
 	// Execute template with proper type conversions for context-aware escaping
 	data := map[string]interface{}{
 		"Title":        title,                      // Auto-escaped for HTML context
-		"CSS":          template.CSS(sanitizedCSS), // CSS-safe after sanitization
+		"CSS":          template.CSS(sanitizedCSS), // #nosec G203 -- CSS sanitized, consumer's responsibility
 		"CDN":          cdn,                        // Auto-escaped for attribute context
-		"CustomHeadJS": template.HTML(headJS),      // Wrapped in script tags, user's responsibility
-		"CustomBodyJS": template.HTML(bodyJS),      // Wrapped in script tags, user's responsibility
+		"CustomHeadJS": template.HTML(headJS),      // #nosec G203 -- User-provided script injection point
+		"CustomBodyJS": template.HTML(bodyJS),      // #nosec G203 -- User-provided script injection point
 	}
 
 	// Add appropriate script field based on render mode
 	if renderMode == RenderModeJavaScriptAPI {
-		data["InitScript"] = template.JS(specScript) // JS-safe for <script> tag content
+		data["InitScript"] = template.JS(specScript) // #nosec G203 -- JS-safe for <script> tag content
 	} else {
-		data["SpecScript"] = template.HTML(specScript) // Already validated JSON in script tag
+		data["SpecScript"] = template.HTML(specScript) // #nosec G203 -- Already validated JSON in script tag
 	}
 
 	err := tmpl.Execute(&buf, data)

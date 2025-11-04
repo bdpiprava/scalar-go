@@ -4,12 +4,12 @@ import (
 	scalargo "github.com/bdpiprava/scalar-go"
 )
 
-// ExampleJavaScriptAPIMode demonstrates using the JavaScript API rendering mode
+// ExampleJavaScriptAPIMode demonstrates using the JavaScript API rendering mode (now the default)
 func ExampleJavaScriptAPIMode() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
+		// No need to specify WithRenderMode - JavaScript API is now the default
 	)
 }
 
@@ -18,7 +18,6 @@ func ExampleJavaScriptAPIWithCustomJS() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
 		scalargo.WithCustomHeadJS(`
 			// Custom initialization code in head
 			console.log('Scalar is about to initialize');
@@ -32,37 +31,12 @@ func ExampleJavaScriptAPIWithCustomJS() (string, error) {
 	)
 }
 
-// ExampleHideSearchAndShowOperationID demonstrates display configuration options
-func ExampleHideSearchAndShowOperationID() (string, error) {
-	return scalargo.NewV2(
-		scalargo.WithSpecDir(specDir),
-		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
-		scalargo.WithHideSearch(true),
-		scalargo.WithShowOperationID(true),
-	)
-}
-
 // ExampleDefaultHTTPClient demonstrates setting the default HTTP client for code examples
 func ExampleDefaultHTTPClient() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
 		scalargo.WithDefaultHTTPClient("node", "undici"),
-	)
-}
-
-// ExampleSortingOptions demonstrates sorting configuration for tags and operations
-func ExampleSortingOptions() (string, error) {
-	return scalargo.NewV2(
-		scalargo.WithSpecDir(specDir),
-		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
-		scalargo.WithTagsSorter(scalargo.SorterAlpha),
-		scalargo.WithOperationsSorter(scalargo.SorterMethod),
-		scalargo.WithOperationTitleSource(scalargo.OperationTitleSourcePath),
-		scalargo.WithOrderSchemaPropertiesBy(scalargo.SchemaPropertiesOrderAlpha),
 	)
 }
 
@@ -71,7 +45,6 @@ func ExamplePersistAuth() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
 		scalargo.WithPersistAuth(true),
 		scalargo.WithAuthenticationOpts(
 			scalargo.WithAPIKey("demo-api-key"),
@@ -83,26 +56,25 @@ func ExamplePersistAuth() (string, error) {
 func ExampleMultipleSources() (string, error) {
 	sources := []scalargo.DocumentSource{
 		{
-			Title:   "API v1",
-			Slug:    "v1",
-			URL:     "https://example.com/api/v1/openapi.json",
+			Title:   "Scalar Galaxy API",
+			Slug:    "scalar-galaxy",
+			URL:     "https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml",
 			Default: true,
 		},
 		{
-			Title: "API v2",
-			Slug:  "v2",
-			URL:   "https://example.com/api/v2/openapi.json",
+			Title: "Petstore API",
+			Slug:  "petstore",
+			URL:   "https://petstore3.swagger.io/api/v3/openapi.json",
 		},
 		{
-			Title: "API v3 Beta",
-			Slug:  "v3-beta",
-			URL:   "https://example.com/api/v3/openapi.json",
+			Title: "GitHub REST API",
+			Slug:  "github",
+			URL:   "https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json",
 		},
 	}
 
 	return scalargo.NewV2(
-		scalargo.WithSpecURL("https://example.com/api/v1/openapi.json"),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
+		scalargo.WithSpecURL("https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml"),
 		scalargo.WithMultipleSources(sources...),
 	)
 }
@@ -122,7 +94,6 @@ func ExampleCustomCSSInConfig() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
 		scalargo.WithCustomCSS(customCSS),
 	)
 }
@@ -132,8 +103,6 @@ func ExampleAdvancedConfiguration() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithRenderMode(scalargo.RenderModeJavaScriptAPI),
-		scalargo.WithTheme(scalargo.ThemePurple),
 		scalargo.WithLayout(scalargo.LayoutModern),
 		scalargo.WithDarkMode(),
 		scalargo.WithHideSearch(false),
@@ -148,41 +117,86 @@ func ExampleAdvancedConfiguration() (string, error) {
 	)
 }
 
-// ExampleBackwardCompatibility demonstrates that existing code works without changes
-func ExampleBackwardCompatibility() (string, error) {
-	// This is the old way - still works perfectly (defaults to data-attribute mode)
+// ExampleDataAttributeMode demonstrates using the legacy data-attribute rendering mode for backward compatibility
+func ExampleDataAttributeMode() (string, error) {
+	// Explicitly use the legacy data-attribute mode (pre-v1.0 behavior)
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithTheme(scalargo.ThemeDefault),
+		scalargo.WithRenderMode(scalargo.RenderModeDataAttribute),
 		scalargo.WithLayout(scalargo.LayoutModern),
 	)
 }
 
-// ExampleToolbarAlwaysVisible demonstrates enabling the developer toolbar in all environments
-func ExampleToolbarAlwaysVisible() (string, error) {
+// ExampleToolbarVisibility demonstrates controlling the developer toolbar visibility
+// Options: ShowToolbarAlways (all environments), ShowToolbarLocalhost (local dev only), ShowToolbarNever (hidden)
+func ExampleToolbarVisibility() (string, error) {
 	return scalargo.NewV2(
 		scalargo.WithSpecDir(specDir),
 		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithShowToolbar(scalargo.ShowToolbarAlways),
-	)
-}
-
-// ExampleToolbarLocalhostOnly demonstrates showing the toolbar only on localhost (Scalar default)
-func ExampleToolbarLocalhostOnly() (string, error) {
-	return scalargo.NewV2(
-		scalargo.WithSpecDir(specDir),
-		scalargo.WithBaseFileName(specFileName),
-		scalargo.WithShowToolbar(scalargo.ShowToolbarLocalhost),
-	)
-}
-
-// ExampleToolbarNeverVisible demonstrates hiding the toolbar completely (this library's default)
-func ExampleToolbarNeverVisible() (string, error) {
-	// Note: This is the default behavior, so WithShowToolbar(ShowToolbarNever) is optional
-	return scalargo.NewV2(
-		scalargo.WithSpecDir(specDir),
-		scalargo.WithBaseFileName(specFileName),
+		// ShowToolbarAlways: Visible in all environments for debugging
+		// ShowToolbarLocalhost: Visible only on localhost (Scalar's default)
+		// ShowToolbarNever: Completely hidden (this library's default)
 		scalargo.WithShowToolbar(scalargo.ShowToolbarNever),
+	)
+}
+
+// ExampleHideSearch demonstrates hiding the search functionality
+func ExampleHideSearch() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithHideSearch(true),
+	)
+}
+
+// ExampleShowOperationID demonstrates displaying operation IDs in the UI
+func ExampleShowOperationID() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithShowOperationID(true),
+	)
+}
+
+// ExampleTagsSorter demonstrates sorting tags alphabetically in the sidebar
+func ExampleTagsSorter() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithTagsSorter(scalargo.SorterAlpha),
+	)
+}
+
+// ExampleOperationsSorter demonstrates sorting operations within tags
+func ExampleOperationsSorter() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		// SorterAlpha: Alphabetically by title
+		// SorterMethod: By HTTP method (GET, POST, PUT, DELETE, etc.)
+		scalargo.WithOperationsSorter(scalargo.SorterMethod),
+	)
+}
+
+// ExampleOperationTitleSource demonstrates choosing operation title source
+func ExampleOperationTitleSource() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		// OperationTitleSourceSummary: Use operation summary
+		// OperationTitleSourcePath: Use operation path
+		scalargo.WithOperationTitleSource(scalargo.OperationTitleSourcePath),
+	)
+}
+
+// ExampleSchemaPropertiesOrder demonstrates controlling schema property order
+func ExampleSchemaPropertiesOrder() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		// SchemaPropertiesOrderAlpha: Sort alphabetically
+		// SchemaPropertiesOrderPreserve: Preserve original spec order
+		scalargo.WithOrderSchemaPropertiesBy(scalargo.SchemaPropertiesOrderAlpha),
 	)
 }

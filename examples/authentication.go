@@ -93,7 +93,6 @@ func ExampleOAuth2AuthorizationCode() (string, error) {
 				scalargo.WithOAuth2Scopes("read:api", "write:api"),
 			),
 		),
-		scalargo.WithTheme(scalargo.ThemeMoon),
 	)
 }
 
@@ -110,7 +109,6 @@ func ExampleOAuth2ClientCredentials() (string, error) {
 				scalargo.WithOAuth2Scopes("read:api", "write:api"),
 			),
 		),
-		scalargo.WithTheme(scalargo.ThemeDeepSpace),
 	)
 }
 
@@ -178,7 +176,6 @@ func ExampleMultipleSecuritySchemes() (string, error) {
 			// Set the preferred authentication method
 			scalargo.WithPreferredSecurityScheme("bearer_auth"),
 		),
-		scalargo.WithTheme(scalargo.ThemePurple),
 	)
 }
 
@@ -212,7 +209,6 @@ func ExampleMultipleSecuritySchemesWithOAuth2() (string, error) {
 			// Prefer OAuth2 for this API
 			scalargo.WithPreferredSecurityScheme("oauth2"),
 		),
-		scalargo.WithTheme(scalargo.ThemeSaturn),
 		scalargo.WithLayout(scalargo.LayoutModern),
 	)
 }
@@ -251,7 +247,6 @@ func ExampleGitHubStyleAuth() (string, error) {
 			scalargo.WithTitle("GitHub-Style API Documentation"),
 			scalargo.WithKeyValue("description", "API with multiple authentication methods like GitHub"),
 		),
-		scalargo.WithTheme(scalargo.ThemeMoon),
 		scalargo.WithDarkMode(),
 	)
 }
@@ -276,7 +271,6 @@ func ExampleStripeStyleAuth() (string, error) {
 			scalargo.WithTitle("Stripe-Style API Documentation"),
 			scalargo.WithKeyValue("description", "API with test/live key separation"),
 		),
-		scalargo.WithTheme(scalargo.ThemePurple),
 	)
 }
 
@@ -302,7 +296,6 @@ func ExampleAuth0StyleOAuth2() (string, error) {
 			scalargo.WithTitle("Auth0-Protected API Documentation"),
 			scalargo.WithKeyValue("description", "API secured with Auth0 OAuth2"),
 		),
-		scalargo.WithTheme(scalargo.ThemeDeepSpace),
 	)
 }
 
@@ -352,7 +345,6 @@ func ExampleProductionAPIWithFullAuth() (string, error) {
 			scalargo.WithTitle("Production API Documentation"),
 			scalargo.WithKeyValue("description", "Comprehensive API with multiple authentication methods"),
 		),
-		scalargo.WithTheme(scalargo.ThemeDefault),
 		scalargo.WithLayout(scalargo.LayoutModern),
 		scalargo.WithDarkMode(),
 		scalargo.WithHideDownloadButton(),

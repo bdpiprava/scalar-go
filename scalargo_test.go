@@ -48,23 +48,30 @@ func Test_NewV2(t *testing.T) {
 		},
 		{
 			name:      "should render html containing script with spec URL when spec URL is configured",
-			inputOpts: []scalargo.Option{scalargo.WithSpecURL(specURL)},
+			inputOpts: []scalargo.Option{scalargo.WithSpecURL(specURL), scalargo.WithRenderMode(scalargo.RenderModeDataAttribute)},
 			asserter: func(t *testing.T, got html) {
 				require.Empty(t, got.spec)
 				require.Equal(t, "https://cdn.jsdelivr.net/npm/@scalar/galaxy/dist/latest.yaml", got.specURL)
 			},
 		},
 		{
-			name:      "should render html with inline spec when spec directory is configured",
-			inputOpts: []scalargo.Option{scalargo.WithSpecDir("./data/loader"), scalargo.WithBaseFileName("pet-store.yml")},
+			name: "should render html with inline spec when spec directory is configured",
+			inputOpts: []scalargo.Option{
+				scalargo.WithSpecDir("./data/loader"),
+				scalargo.WithBaseFileName("pet-store.yml"),
+				scalargo.WithRenderMode(scalargo.RenderModeDataAttribute),
+			},
 			asserter: func(t *testing.T, got html) {
 				require.Empty(t, got.specURL)
 				require.True(t, strings.HasPrefix(got.spec, `{"openapi":"3.0.0","info":{"title":"Swagger Petstore",`))
 			},
 		},
 		{
-			name:      "should render html with inline spec when spec bytes is configured",
-			inputOpts: []scalargo.Option{scalargo.WithSpecBytes([]byte(`{"openapi":"3.0.0","info":{"title":"Swagger Petstore"}}`))},
+			name: "should render html with inline spec when spec bytes is configured",
+			inputOpts: []scalargo.Option{
+				scalargo.WithSpecBytes([]byte(`{"openapi":"3.0.0","info":{"title":"Swagger Petstore"}}`)),
+				scalargo.WithRenderMode(scalargo.RenderModeDataAttribute),
+			},
 			asserter: func(t *testing.T, got html) {
 				require.Empty(t, got.specURL)
 				require.True(t, strings.HasPrefix(got.spec, `{"openapi":"3.0.0","info":{"title":"Swagger Petstore","version":""},"paths":{}`))
@@ -74,6 +81,7 @@ func Test_NewV2(t *testing.T) {
 			name: "should render html with authentication configuration",
 			inputOpts: []scalargo.Option{
 				scalargo.WithSpecURL(specURL),
+				scalargo.WithRenderMode(scalargo.RenderModeDataAttribute), // Use data-attribute mode for configuration parsing
 				scalargo.WithAuthenticationOpts(
 					scalargo.WithCustomSecurity(),
 					scalargo.WithPreferredSecurityScheme("bearerAuth"),
@@ -84,6 +92,7 @@ func Test_NewV2(t *testing.T) {
 				require.Equal(t, map[string]any{
 					"layout":         string(scalargo.LayoutModern),
 					"theme":          string(scalargo.ThemeDefault),
+					"showToolbar":    "never",
 					"metadata":       map[string]any{"title": "API Reference"},
 					"authentication": `{"customSecurity":true,"preferredSecurityScheme":["bearerAuth"],"securitySchemes":{"httpBearer":{"token":"this-is-a-token"}}}`,
 				}, got.configuration)
@@ -93,6 +102,7 @@ func Test_NewV2(t *testing.T) {
 			name: "should render html with multiple authentication methods without conflicts",
 			inputOpts: []scalargo.Option{
 				scalargo.WithSpecURL(specURL),
+				scalargo.WithRenderMode(scalargo.RenderModeDataAttribute), // Use data-attribute mode for configuration parsing
 				scalargo.WithAuthenticationOpts(
 					scalargo.WithPreferredSecurityScheme("httpBearer", "httpBasic"),
 					scalargo.WithHTTPBasicAuth("admin", "secret123"),
@@ -132,6 +142,7 @@ func Test_NewV2(t *testing.T) {
 			name: "should render html with custom configuration",
 			inputOpts: []scalargo.Option{
 				scalargo.WithSpecURL(specURL),
+				scalargo.WithRenderMode(scalargo.RenderModeDataAttribute), // Use data-attribute mode for configuration parsing
 				scalargo.WithTheme(scalargo.ThemeKepler),
 				scalargo.WithHideAllClients(),
 				scalargo.WithLayout(scalargo.LayoutClassic),
@@ -142,6 +153,7 @@ func Test_NewV2(t *testing.T) {
 					"hiddenClients": true,
 					"layout":        string(scalargo.LayoutClassic),
 					"theme":         string(scalargo.ThemeKepler),
+					"showToolbar":   "never",
 					"metadata": map[string]any{
 						"title": "API Reference",
 						"foo":   "bar",

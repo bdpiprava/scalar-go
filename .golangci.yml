@@ -49,7 +49,7 @@ linters:
     paths:
       - third_party$
       - builtin$
-      - examples$
+      - ^examples/
 
 formatters:
   enable:
@@ -60,4 +60,4 @@ formatters:
     paths:
       - third_party$
       - builtin$
-      - examples$
+      - ^examples/
