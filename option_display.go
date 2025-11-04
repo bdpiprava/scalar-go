@@ -72,3 +72,12 @@ func WithMultipleSources(sources ...DocumentSource) func(*Options) {
 		o.Configurations[keySources] = sources
 	}
 }
+
+// WithShowToolbar controls the visibility of the developer tools toolbar
+// Accepts: ShowToolbarAlways, ShowToolbarLocalhost, or ShowToolbarNever
+// Default in this library: ShowToolbarNever (differs from Scalar's default of localhost)
+func WithShowToolbar(visibility ShowToolbarOption) func(*Options) {
+	return func(o *Options) {
+		o.Configurations[keyShowToolbar] = string(visibility)
+	}
+}

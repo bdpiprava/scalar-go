@@ -158,3 +158,31 @@ func ExampleBackwardCompatibility() (string, error) {
 		scalargo.WithLayout(scalargo.LayoutModern),
 	)
 }
+
+// ExampleToolbarAlwaysVisible demonstrates enabling the developer toolbar in all environments
+func ExampleToolbarAlwaysVisible() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithShowToolbar(scalargo.ShowToolbarAlways),
+	)
+}
+
+// ExampleToolbarLocalhostOnly demonstrates showing the toolbar only on localhost (Scalar default)
+func ExampleToolbarLocalhostOnly() (string, error) {
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithShowToolbar(scalargo.ShowToolbarLocalhost),
+	)
+}
+
+// ExampleToolbarNeverVisible demonstrates hiding the toolbar completely (this library's default)
+func ExampleToolbarNeverVisible() (string, error) {
+	// Note: This is the default behavior, so WithShowToolbar(ShowToolbarNever) is optional
+	return scalargo.NewV2(
+		scalargo.WithSpecDir(specDir),
+		scalargo.WithBaseFileName(specFileName),
+		scalargo.WithShowToolbar(scalargo.ShowToolbarNever),
+	)
+}

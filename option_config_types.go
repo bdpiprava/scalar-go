@@ -44,3 +44,15 @@ const (
 	// SchemaPropertiesOrderPreserve preserves the order from the spec
 	SchemaPropertiesOrderPreserve SchemaPropertiesOrder = "preserve"
 )
+
+// ShowToolbarOption defines when to display the developer tools toolbar
+type ShowToolbarOption string
+
+const (
+	// ShowToolbarAlways displays the toolbar in all environments
+	ShowToolbarAlways ShowToolbarOption = "always"
+	// ShowToolbarLocalhost displays toolbar only on localhost or similar hosts (Scalar default)
+	ShowToolbarLocalhost ShowToolbarOption = "localhost"
+	// ShowToolbarNever never displays the toolbar
+	ShowToolbarNever ShowToolbarOption = "never"
+)

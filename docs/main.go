@@ -108,8 +108,12 @@ func main() {
 	http.HandleFunc("/servers-override", handler(exampleForServersOverride))
 	http.HandleFunc("/other-configs", handler(exampleForOtherConfigs))
 
+	staticServer := http.FileServer(http.Dir("./build/docs"))
 	// Serve static files from build directory
-	http.Handle("/", http.FileServer(http.Dir("./build/docs")))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		buildStatic()
+		staticServer.ServeHTTP(w, r)
+	})
 
 	println("Starting server at http://localhost:8090")
 	server := &http.Server{
@@ -768,6 +772,127 @@ func getExamples() []*Example {
 			Category:     "Advanced",
 			CategoryIcon: "fa-cogs",
 			Icon:         "fa-star",
+		},
+
+		// ============================================================
+		// JavaScript API Mode
+		// ============================================================
+		{
+			Name:         "JavaScript API Mode",
+			Description:  `Use JavaScript API rendering mode for enhanced control`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleJavaScriptAPIMode)),
+			Output:       ignoreError(examples.ExampleJavaScriptAPIMode),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-code",
+		},
+		{
+			Name:         "Custom JavaScript Injection",
+			Description:  `Inject custom JavaScript in head and body for advanced initialization`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleJavaScriptAPIWithCustomJS)),
+			Output:       ignoreError(examples.ExampleJavaScriptAPIWithCustomJS),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-file-code",
+		},
+		{
+			Name:         "Display Configuration",
+			Description:  `Configure search visibility and operation ID display`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleHideSearchAndShowOperationID)),
+			Output:       ignoreError(examples.ExampleHideSearchAndShowOperationID),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-sliders-h",
+		},
+		{
+			Name:         "Default HTTP Client",
+			Description:  `Set default HTTP client for code examples`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleDefaultHTTPClient)),
+			Output:       ignoreError(examples.ExampleDefaultHTTPClient),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-network-wired",
+		},
+		{
+			Name:         "Sorting Options",
+			Description:  `Configure sorting for tags, operations, and schema properties`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleSortingOptions)),
+			Output:       ignoreError(examples.ExampleSortingOptions),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-sort",
+		},
+		{
+			Name:         "Persist Authentication",
+			Description:  `Enable authentication persistence in localStorage`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExamplePersistAuth)),
+			Output:       ignoreError(examples.ExamplePersistAuth),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-save",
+		},
+		{
+			Name:         "Multiple API Sources",
+			Description:  `Configure multiple OpenAPI document sources with version switcher`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleMultipleSources)),
+			Output:       ignoreError(examples.ExampleMultipleSources),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-layer-group",
+		},
+		{
+			Name:         "Custom CSS via Config",
+			Description:  `Apply custom CSS through configuration object`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleCustomCSSInConfig)),
+			Output:       ignoreError(examples.ExampleCustomCSSInConfig),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-palette",
+		},
+		{
+			Name:         "Advanced Configuration",
+			Description:  `Comprehensive JavaScript API configuration with multiple features`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleAdvancedConfiguration)),
+			Output:       ignoreError(examples.ExampleAdvancedConfiguration),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-tools",
+		},
+		{
+			Name:         "Backward Compatibility",
+			Description:  `Verify existing code works without changes (data-attribute mode)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleBackwardCompatibility)),
+			Output:       ignoreError(examples.ExampleBackwardCompatibility),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-check-circle",
+		},
+		{
+			Name:         "Toolbar Always Visible",
+			Description:  `Enable developer toolbar in all environments for debugging`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleToolbarAlwaysVisible)),
+			Output:       ignoreError(examples.ExampleToolbarAlwaysVisible),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-wrench",
+		},
+		{
+			Name:         "Toolbar Localhost Only",
+			Description:  `Show developer toolbar only on localhost (Scalar default behavior)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleToolbarLocalhostOnly)),
+			Output:       ignoreError(examples.ExampleToolbarLocalhostOnly),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-laptop-code",
+		},
+		{
+			Name:         "Toolbar Hidden",
+			Description:  `Hide developer toolbar completely (this library's default)`,
+			Code:         readFuncBodyIgnoreError(reflect.ValueOf(examples.ExampleToolbarNeverVisible)),
+			Output:       ignoreError(examples.ExampleToolbarNeverVisible),
+			Category:     "JavaScript API",
+			CategoryIcon: "fa-js",
+			Icon:         "fa-eye-slash",
 		},
 	}
 }

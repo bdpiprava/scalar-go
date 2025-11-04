@@ -75,8 +75,9 @@ func NewV2(opts ...Option) (string, error) {
 func buildOptions(opts ...Option) *Options {
 	options := &Options{
 		Configurations: map[string]any{
-			keyTheme:  ThemeDefault,
-			keyLayout: LayoutModern,
+			keyTheme:       ThemeDefault,
+			keyLayout:      LayoutModern,
+			keyShowToolbar: string(ShowToolbarNever), // Default to never (Scalar defaults to localhost)
 			keyMetaData: MetaData{
 				"title": "API Reference",
 			},
@@ -121,7 +122,7 @@ var htmlTemplateJSAPI = template.Must(template.New("scalar-js-api").Parse(`<!DOC
     {{.CustomHeadJS}}
   </head>
   <body>
-    <div id="api-reference"></div>
+    <div id="app"></div>
     <script src="{{.CDN}}"></script>
     <script>
       {{.InitScript}}
@@ -256,7 +257,7 @@ func (o *Options) BuildInitScript() (string, error) {
 
 	// Generate JavaScript initialization code
 	return fmt.Sprintf(
-		"Scalar.createApiReference('#api-reference', %s);",
+		"Scalar.createApiReference('#app', %s);",
 		string(configJSON),
 	), nil
 }

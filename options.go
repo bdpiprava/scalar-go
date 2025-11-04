@@ -38,6 +38,7 @@ const (
 	keyPersistAuth             = "persistAuth"
 	keyCustomCSS               = "customCss"
 	keySources                 = "sources"
+	keyShowToolbar             = "showToolbar"
 )
 
 // SpecModifier is a function that can be used to override the spec
